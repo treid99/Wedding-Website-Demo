@@ -1,0 +1,21 @@
+node_modules/
+.next/
+out/
+build/
+
+# Original full-resolution photos (~180MB) — run `npm run photos:build` to derive web versions
+/images/
+
+# Generated photo derivatives + manifest
+/public/photos/
+/data/photos.json
+
+# Local SQLite database
+/data/*.db
+/data/*.db-shm
+/data/*.db-wal
+
+next-env.d.ts
+*.tsbuildinfo
+.env*
+.DS_Store
