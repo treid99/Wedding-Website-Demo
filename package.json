@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "photos:shrink": "node scripts/shrink-originals.mjs",
     "photos:build": "node scripts/build-photos.mjs",
     "db:reset": "node scripts/seed.mjs",
     "setup": "npm run photos:build && npm run db:reset"

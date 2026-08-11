@@ -18,16 +18,14 @@ Requires Node 20.19+ (tested on 20.19.1).
 
 ```bash
 npm install
-npm run photos:build     # derives web-sized photos from ./images  (~10s)
-npm run db:reset         # creates and seeds data/wedding.db
+npm run setup            # photos:build + db:reset  (~10s)
 npm run dev              # http://localhost:3000
 ```
 
-`npm run setup` runs the two build steps together.
-
-The originals in `./images` (59 photos, ~180MB) are never modified and are
-git-ignored, as are the generated derivatives and the database — so a fresh
-clone needs `photos:build` and `db:reset` before `dev`.
+That's everything — the repo is self-contained. `npm run setup` is just
+`photos:build` (derives web-sized photos from `./images`) followed by
+`db:reset` (creates and seeds `data/wedding.db`). Both outputs are git-ignored
+because both are generated; the source photos are committed.
 
 ### Signing in to the dashboard
 
@@ -123,10 +121,11 @@ lib/
   registry-params.ts  URL <-> filter state; client-safe
   wedding.ts       the wedding's fixed facts
 scripts/
-  build-photos.mjs  sharp pipeline
-  schema.sql        drops and recreates everything
-  seed.mjs          all seeding logic
-  seed-data.mjs     all demo content in one file
+  shrink-originals.mjs  one-time: makes ./images committable
+  build-photos.mjs      derives the two served tiers
+  schema.sql            drops and recreates everything
+  seed.mjs              all seeding logic
+  seed-data.mjs         all demo content in one file
 ```
 
 `lib/db.ts` imports `server-only`. If a client component ever reaches the
@@ -134,6 +133,36 @@ database through an import chain, the build fails with a clear message instead o
 a confusing "can't resolve 'fs'" from inside better-sqlite3.
 
 ---
+
+## Photos
+
+`./images` holds 59 committed source photos (~10MB) at 2048px WebP. They started
+as a 180MB full-resolution set and were shrunk once by `npm run photos:shrink`
+so the repo could carry them. `photos:build` then derives the two tiers the site
+actually serves:
+
+```
+./images/<name>.webp   2048px, q85   committed    ~10MB
+        |
+        +-> public/photos/full/<name>.webp    1600px, q80   generated  ~6MB
+        +-> public/photos/thumb/<name>.webp    600px, q75   generated  ~3MB
+```
+
+2048px leaves headroom over the 1600px render tier without waste. Deriving 1600
+from 2048 rather than from the 5458px original measures ~37dB PSNR — visually
+indistinguishable — and that gap is a two-step resampling artifact, not
+compression damage: a *lossless* intermediate scores the same, so paying for
+higher quality buys nothing.
+
+Dropping new full-resolution photos into `./images`? Run `photos:shrink` (it
+skips anything already in bounds), then `photos:build -- --force`, then
+`db:reset`. **`photos:shrink` rewrites files in place** — keep the
+full-resolution set elsewhere if you still want it.
+
+One caveat: a single photo (`…-2681`) is 1600px rather than 2048px. Its original
+was lost during the one-time shrink and it was recovered from the
+already-generated 1600px derivative. It renders identically at every size the
+site uses; re-drop the original over it if you want the headroom back.
 
 ## Notes & known limits
 
@@ -153,3 +182,6 @@ a confusing "can't resolve 'fs'" from inside better-sqlite3.
   dashboard as the newest.
 - **`db:reset` is destructive** — it drops every table and reseeds. Any RSVPs or
   edits made in the demo are lost.
+- **`photos:shrink` is destructive** — it rewrites `./images` in place. It's a
+  one-time step that has already been run; you only need it again if you add new
+  full-resolution photos.

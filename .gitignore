@@ -3,10 +3,11 @@ node_modules/
 out/
 build/
 
-# Original full-resolution photos (~180MB) — run `npm run photos:build` to derive web versions
-/images/
+# Source photos ARE committed (~10MB, 2048px WebP). They were shrunk from the
+# 180MB full-resolution set by `npm run photos:shrink` so the repo is
+# self-contained: clone, `npm run setup`, done.
 
-# Generated photo derivatives + manifest
+# Generated photo derivatives + manifest — rebuilt by `npm run photos:build`
 /public/photos/
 /data/photos.json
 
