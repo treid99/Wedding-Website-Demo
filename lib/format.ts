@@ -51,3 +51,18 @@ export function toParagraphs(body: string): string[] {
 export function pluralize(count: number, singular: string, plural?: string): string {
   return count === 1 ? singular : (plural ?? `${singular}s`);
 }
+
+/**
+ * The addressee line for a group's envelope.
+ *
+ * `envelope_name` is optional — an empty one inherits the group name, so
+ * "The Mitchell Family" needs no separate entry while "Margaret Whitfield" can
+ * be addressed as "Mrs. Margaret Whitfield". Always read the field through
+ * this helper so the fallback can't be forgotten at one of the call sites.
+ */
+export function envelopeName(party: {
+  name: string;
+  envelope_name?: string | null;
+}): string {
+  return party.envelope_name?.trim() || party.name;
+}

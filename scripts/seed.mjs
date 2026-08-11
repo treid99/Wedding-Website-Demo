@@ -256,8 +256,8 @@ function main() {
 
     // ── Parties, guests, submissions ────────────────────────────────────────
     const insertParty = db.prepare(
-      `INSERT INTO parties (name, invite_code, address, notes, side)
-       VALUES (@name, @invite_code, @address, @notes, @side)`,
+      `INSERT INTO parties (name, invite_code, envelope_name, address, notes, side)
+       VALUES (@name, @invite_code, @envelope_name, @address, @notes, @side)`,
     );
     const insertGuest = db.prepare(
       `INSERT INTO guests
@@ -296,6 +296,9 @@ function main() {
       const { lastInsertRowid: partyId } = insertParty.run({
         name: party.name,
         invite_code: party.invite_code,
+        // Left blank for most groups on purpose, so the inherit-from-name
+        // fallback is exercised by the seeded data and not just by new entries.
+        envelope_name: party.envelope ?? "",
         address: party.address,
         notes: party.notes,
         side: party.side,

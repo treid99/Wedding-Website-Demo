@@ -58,6 +58,21 @@ function bool(form: FormData, key: string): boolean {
 const VALID_MEALS = new Set<string>(MEAL_CHOICES.map((m) => m.value));
 const VALID_STATUSES = new Set<string>(RSVP_STATUSES);
 
+const SIDES = ["bride", "groom", "both"];
+
+function normalizeSide(value: string): string {
+  return SIDES.includes(value) ? value : "both";
+}
+
+/**
+ * Return shape for every action driven by useActionState — the dialogs need to
+ * know whether to close and what to say, which a void action can't tell them.
+ */
+export type ActionResult =
+  | { ok: true; message: string }
+  | { ok: false; error: string }
+  | null;
+
 // ── Guests ──────────────────────────────────────────────────────────────────
 
 export async function updateGuest(form: FormData): Promise<void> {
@@ -94,21 +109,98 @@ export async function updateGuest(form: FormData): Promise<void> {
   revalidateAdmin();
 }
 
-export async function createGuest(form: FormData): Promise<void> {
+/**
+ * Edits the fields the group view's guest dialog exposes: name, child flag,
+ * RSVP status, meal, and which invitation they belong to.
+ *
+ * Deliberately a narrower UPDATE than updateGuest() rather than a reuse of it —
+ * this form has no dietary-notes input, and a shared statement would blank the
+ * column every time someone renamed a guest from the group view.
+ */
+export async function updateGuestBasics(
+  _prev: ActionResult,
+  form: FormData,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const id = num(form, "id");
+  if (id == null) return { ok: false, error: "That guest no longer exists." };
+
+  const firstName = str(form, "first_name", 80);
+  const lastName = str(form, "last_name", 80);
+  if (!firstName && !lastName) {
+    return { ok: false, error: "Enter at least a first or last name." };
+  }
+
+  const status = str(form, "rsvp_status");
+  const meal = str(form, "meal_choice");
+  const partyId = num(form, "party_id");
+
+  const db = getDb();
+
+  if (partyId != null && !db.prepare("SELECT 1 FROM parties WHERE id = ?").get(partyId)) {
+    return { ok: false, error: "That group no longer exists." };
+  }
+
+  const result = db
+    .prepare(
+      `UPDATE guests
+       SET first_name = ?, last_name = ?, is_child = ?, rsvp_status = ?,
+           meal_choice = ?, party_id = COALESCE(?, party_id),
+           responded_at = CASE WHEN ? = 'pending' THEN NULL
+                               ELSE COALESCE(responded_at, datetime('now')) END
+       WHERE id = ?`,
+    )
+    .run(
+      firstName || "Guest",
+      lastName,
+      bool(form, "is_child") ? 1 : 0,
+      VALID_STATUSES.has(status) ? status : "pending",
+      VALID_MEALS.has(meal) ? meal : null,
+      partyId,
+      VALID_STATUSES.has(status) ? status : "pending",
+      id,
+    );
+
+  if (result.changes === 0) {
+    return { ok: false, error: "That guest no longer exists." };
+  }
+
+  revalidateAdmin();
+
+  const who = [firstName, lastName].filter(Boolean).join(" ");
+  return { ok: true, message: `Saved ${who}.` };
+}
+
+/** Adds one guest to an existing group — the group card's inline Add guest row. */
+export async function createGuest(
+  _prev: ActionResult,
+  form: FormData,
+): Promise<ActionResult> {
   await requireAdmin();
 
   const partyId = num(form, "party_id");
   const firstName = str(form, "first_name", 80);
-  if (partyId == null || !firstName) return;
+  const lastName = str(form, "last_name", 80);
+
+  if (partyId == null) {
+    return { ok: false, error: "That group no longer exists." };
+  }
+  if (!firstName && !lastName) {
+    return { ok: false, error: "Enter at least a first or last name." };
+  }
 
   getDb()
     .prepare(
       `INSERT INTO guests (party_id, first_name, last_name, is_child, rsvp_status)
        VALUES (?, ?, ?, ?, 'pending')`,
     )
-    .run(partyId, firstName, str(form, "last_name", 80), bool(form, "is_child") ? 1 : 0);
+    .run(partyId, firstName || "Guest", lastName, bool(form, "is_child") ? 1 : 0);
 
   revalidateAdmin();
+
+  const who = [firstName, lastName].filter(Boolean).join(" ");
+  return { ok: true, message: `Added ${who}.` };
 }
 
 export async function deleteGuest(form: FormData): Promise<void> {
@@ -117,18 +209,6 @@ export async function deleteGuest(form: FormData): Promise<void> {
   if (id == null) return;
 
   getDb().prepare("DELETE FROM guests WHERE id = ?").run(id);
-  revalidateAdmin();
-}
-
-/** Moves a guest to a different invitation group. */
-export async function moveGuest(form: FormData): Promise<void> {
-  await requireAdmin();
-
-  const id = num(form, "id");
-  const partyId = num(form, "party_id");
-  if (id == null || partyId == null) return;
-
-  getDb().prepare("UPDATE guests SET party_id = ? WHERE id = ?").run(partyId, id);
   revalidateAdmin();
 }
 
@@ -159,18 +239,6 @@ function inviteCodeFor(name: string): string {
 //
 // createGroupWithMembers supersedes the old create-an-empty-group action: a
 // group and its people are always saved together.
-
-/** Result shape shared by the two dialog actions, for useActionState. */
-export type AddResult =
-  | { ok: true; message: string }
-  | { ok: false; error: string }
-  | null;
-
-const SIDES = ["bride", "groom", "both"];
-
-function normalizeSide(value: string): string {
-  return SIDES.includes(value) ? value : "both";
-}
 
 type MemberInput = { first: string; last: string; child: boolean };
 
@@ -205,9 +273,9 @@ function parseMembers(raw: string): MemberInput[] {
  * an empty group, go find it, and then fill it in.
  */
 export async function createGroupWithMembers(
-  _prev: AddResult,
+  _prev: ActionResult,
   form: FormData,
-): Promise<AddResult> {
+): Promise<ActionResult> {
   await requireAdmin();
 
   const name = str(form, "name", 120);
@@ -217,8 +285,8 @@ export async function createGroupWithMembers(
   const db = getDb();
 
   const insertParty = db.prepare(
-    `INSERT INTO parties (name, invite_code, address, notes, side)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO parties (name, invite_code, envelope_name, address, notes, side)
+     VALUES (?, ?, ?, ?, ?, ?)`,
   );
   const insertGuest = db.prepare(
     `INSERT INTO guests (party_id, first_name, last_name, is_child, rsvp_status)
@@ -229,6 +297,7 @@ export async function createGroupWithMembers(
     const { lastInsertRowid } = insertParty.run(
       name,
       inviteCodeFor(name),
+      str(form, "envelope_name", 200),
       str(form, "address", 300),
       str(form, "notes", 1000),
       normalizeSide(str(form, "side")),
@@ -259,9 +328,9 @@ export async function createGroupWithMembers(
  * the same submission.
  */
 export async function createGuestInGroup(
-  _prev: AddResult,
+  _prev: ActionResult,
   form: FormData,
-): Promise<AddResult> {
+): Promise<ActionResult> {
   await requireAdmin();
 
   const firstName = str(form, "first_name", 80);
@@ -328,38 +397,86 @@ export async function createGuestInGroup(
   return { ok: true, message: `Added ${who} to ${groupName}.` };
 }
 
-export async function updateParty(form: FormData): Promise<void> {
+export async function updateParty(
+  _prev: ActionResult,
+  form: FormData,
+): Promise<ActionResult> {
   await requireAdmin();
 
   const id = num(form, "id");
+  if (id == null) return { ok: false, error: "That group no longer exists." };
+
   const name = str(form, "name", 120);
-  if (id == null || !name) return;
+  if (!name) return { ok: false, error: "A group needs a name." };
 
-  const side = str(form, "side");
-
-  getDb()
+  const result = getDb()
     .prepare(
-      `UPDATE parties SET name = ?, address = ?, notes = ?, side = ? WHERE id = ?`,
+      `UPDATE parties
+       SET name = ?, envelope_name = ?, address = ?, notes = ?, side = ?
+       WHERE id = ?`,
     )
     .run(
       name,
+      // An empty envelope name is stored as empty rather than back-filled with
+      // the group name: envelopeName() resolves the fallback at read time, so a
+      // blank field keeps following later renames instead of freezing a copy.
+      str(form, "envelope_name", 200),
       str(form, "address", 300),
       str(form, "notes", 1000),
-      ["bride", "groom", "both"].includes(side) ? side : "both",
+      normalizeSide(str(form, "side")),
       id,
     );
 
+  if (result.changes === 0) {
+    return { ok: false, error: "That group no longer exists." };
+  }
+
   revalidateAdmin();
+  revalidatePath("/rsvp");
+
+  return { ok: true, message: `Saved ${name}.` };
 }
 
-/** Deleting a party cascades to its guests (see schema.sql). */
-export async function deleteParty(form: FormData): Promise<void> {
+/**
+ * Deletes a group. The guests go with it, by the ON DELETE CASCADE on
+ * guests.party_id and rsvp_submissions.party_id in schema.sql — which is why
+ * the UI confirms first and spells out what disappears.
+ */
+export async function deleteParty(
+  _prev: ActionResult,
+  form: FormData,
+): Promise<ActionResult> {
   await requireAdmin();
-  const id = num(form, "id");
-  if (id == null) return;
 
-  getDb().prepare("DELETE FROM parties WHERE id = ?").run(id);
+  const id = num(form, "id");
+  if (id == null) return { ok: false, error: "That group no longer exists." };
+
+  const db = getDb();
+
+  // Read the name and headcount before the row is gone, for the confirmation.
+  const party = db.prepare("SELECT name FROM parties WHERE id = ?").get(id) as
+    | { name: string }
+    | undefined;
+
+  if (!party) return { ok: false, error: "That group has already been deleted." };
+
+  const guests = (
+    db
+      .prepare("SELECT COUNT(*) AS n FROM guests WHERE party_id = ?")
+      .get(id) as { n: number }
+  ).n;
+
+  db.prepare("DELETE FROM parties WHERE id = ?").run(id);
+
   revalidateAdmin();
+  revalidatePath("/rsvp");
+
+  return {
+    ok: true,
+    message: guests
+      ? `Deleted ${party.name} and ${guests} ${guests === 1 ? "guest" : "guests"}.`
+      : `Deleted ${party.name}.`,
+  };
 }
 
 // ── Seating ─────────────────────────────────────────────────────────────────

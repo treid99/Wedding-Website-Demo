@@ -4,7 +4,7 @@ import { useActionState, useEffect, useId, useRef, useState } from "react";
 import {
   createGroupWithMembers,
   createGuestInGroup,
-  type AddResult,
+  type ActionResult,
 } from "@/lib/admin-actions";
 
 type Tab = "guest" | "group";
@@ -167,7 +167,7 @@ function GuestForm({
   onSuccess: (message: string) => void;
   onCancel: () => void;
 }) {
-  const [state, formAction, pending] = useActionState<AddResult, FormData>(
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     createGuestInGroup,
     null,
   );
@@ -306,7 +306,7 @@ function GroupForm({
   onSuccess: (message: string) => void;
   onCancel: () => void;
 }) {
-  const [state, formAction, pending] = useActionState<AddResult, FormData>(
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     createGroupWithMembers,
     null,
   );
@@ -369,16 +369,32 @@ function GroupForm({
         </div>
       </div>
 
-      <div>
-        <label className="label" htmlFor={`${id}-address`}>
-          Mailing address (optional)
-        </label>
-        <input
-          id={`${id}-address`}
-          name="address"
-          placeholder="18 Ridgeview Terrace, Morristown, NJ"
-          className="field"
-        />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor={`${id}-envelope`}>
+            Envelope addressee (optional)
+          </label>
+          <input
+            id={`${id}-envelope`}
+            name="envelope_name"
+            placeholder="Mr. &amp; Mrs. David Mitchell"
+            className="field"
+          />
+          <p className="mt-1.5 text-xs text-muted">
+            Leave blank to use the group name.
+          </p>
+        </div>
+        <div>
+          <label className="label" htmlFor={`${id}-address`}>
+            Mailing address (optional)
+          </label>
+          <input
+            id={`${id}-address`}
+            name="address"
+            placeholder="18 Ridgeview Terrace, Morristown, NJ"
+            className="field"
+          />
+        </div>
       </div>
 
       <fieldset className="border-t border-line pt-5">

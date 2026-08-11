@@ -48,6 +48,8 @@ export type Party = {
   id: number;
   name: string;
   invite_code: string;
+  /** Envelope addressee. Blank inherits `name` — read it via envelopeName(). */
+  envelope_name: string;
   address: string;
   notes: string;
   side: "bride" | "groom" | "both";

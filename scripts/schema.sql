@@ -75,13 +75,17 @@ CREATE INDEX idx_registry_store ON registry_items (store);
 -- A "party" is one invitation / household. RSVP lookup resolves a searched
 -- name to a party, then collects a response for every member.
 CREATE TABLE parties (
-  id           INTEGER PRIMARY KEY AUTOINCREMENT,
-  name         TEXT NOT NULL,
-  invite_code  TEXT NOT NULL UNIQUE,
-  address      TEXT NOT NULL DEFAULT '',
-  notes        TEXT NOT NULL DEFAULT '',  -- private note from the couple
-  side         TEXT NOT NULL DEFAULT 'both' CHECK (side IN ('bride', 'groom', 'both')),
-  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  name          TEXT NOT NULL,
+  invite_code   TEXT NOT NULL UNIQUE,
+  -- Addressee line as it should appear on the invitation envelope, e.g.
+  -- "Mr. & Mrs. David Mitchell". Optional: blank means "use `name`", so the
+  -- couple only fills it in where the formal wording differs.
+  envelope_name TEXT NOT NULL DEFAULT '',
+  address       TEXT NOT NULL DEFAULT '',
+  notes         TEXT NOT NULL DEFAULT '',  -- private note from the couple
+  side          TEXT NOT NULL DEFAULT 'both' CHECK (side IN ('bride', 'groom', 'both')),
+  created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE seating_tables (

@@ -14,6 +14,10 @@
   --color-muted: #7c766d;
   --color-line: #e4dbcb;
 
+  /* Destructive actions — a muted terracotta, not a jarring pure red */
+  --color-clay: #a0574a;
+  --color-clay-dark: #85463b;
+
   /* ── Type ─────────────────────────────────────────────── */
   --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
@@ -108,9 +112,28 @@
     color: var(--color-ivory);
   }
 
+  .btn-danger {
+    background-color: var(--color-clay);
+    color: var(--color-ivory);
+  }
+  .btn-danger:hover {
+    background-color: var(--color-clay-dark);
+  }
+
   .btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+  /* A disabled Save must not look clickable, so cancel each variant's hover. */
+  .btn-primary:disabled:hover {
+    background-color: var(--color-sage);
+  }
+  .btn-danger:disabled:hover {
+    background-color: var(--color-clay);
+  }
+  .btn-outline:disabled:hover {
+    background-color: transparent;
+    color: var(--color-ink);
   }
 
   /* Form fields — shared by RSVP and the whole admin surface */

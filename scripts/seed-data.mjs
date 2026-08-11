@@ -594,6 +594,9 @@ export const parties = [
   {
     name: "The Mitchell Family",
     invite_code: "MITCH01",
+    // Optional: `envelope` overrides the addressee line on the invitation.
+    // Groups without one inherit their name — see envelopeName() in lib/format.
+    envelope: "Mr. & Mrs. David Mitchell",
     address: "18 Ridgeview Terrace, Morristown, NJ 07960",
     side: "bride",
     notes: "Jenna's aunt and uncle. Uncle David will ask about the open bar. Emma is 9.",
@@ -608,6 +611,7 @@ export const parties = [
   {
     name: "Margaret Whitfield",
     invite_code: "WHITF02",
+    envelope: "Mrs. Margaret Whitfield",
     address: "7 Chestnut Lane, Chatham, NJ 07928",
     side: "bride",
     notes: "Jenna's grandmother. Seat her near the family and away from the band's speakers.",
@@ -620,6 +624,7 @@ export const parties = [
   {
     name: "Daniel & Priya Rao",
     invite_code: "RAO03",
+    envelope: "Mr. Daniel Rao & Dr. Priya Rao",
     address: "2214 W Cortland Street, Chicago, IL 60647",
     side: "groom",
     notes: "Tom's college roommate. Flying in Thursday; Priya is the one who set them up, indirectly.",

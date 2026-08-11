@@ -32,7 +32,27 @@ function open(): Database.Database {
   const db = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
+  migrate(db);
   return db;
+}
+
+/**
+ * Additive column migrations, so a database seeded by an older schema.sql keeps
+ * working without `npm run db:reset` throwing away real RSVP responses.
+ *
+ * Only ever add nullable/defaulted columns here — anything that needs to
+ * rewrite existing rows belongs in a reseed instead.
+ */
+function migrate(db: Database.Database): void {
+  const columns = new Set(
+    (db.prepare("PRAGMA table_info(parties)").all() as { name: string }[]).map(
+      (column) => column.name,
+    ),
+  );
+
+  if (!columns.has("envelope_name")) {
+    db.exec("ALTER TABLE parties ADD COLUMN envelope_name TEXT NOT NULL DEFAULT ''");
+  }
 }
 
 export function getDb(): Database.Database {
