@@ -1,17 +1,17 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import AddPeopleDialog from "@/components/admin/AddPeopleDialog";
 import GuestFilters from "@/components/admin/GuestFilters";
 import GuestRow from "@/components/admin/GuestRow";
 import PartyCard from "@/components/admin/PartyCard";
-import { AdminHeader, Card, StatTile } from "@/components/admin/ui";
-import { createParty } from "@/lib/admin-actions";
+import ViewToggle from "@/components/admin/ViewToggle";
+import { AdminHeader, StatTile } from "@/components/admin/ui";
 import { pluralize } from "@/lib/format";
 import {
   getGuests,
   getPartiesWithGuests,
   getPartyOptions,
   getRsvpStats,
-  // Aliased: the filter-bar component above is also called GuestFilters.
+  // Aliased: the filter-bar component below is also called GuestFilters.
   type GuestFilters as GuestFilterState,
 } from "@/lib/queries";
 
@@ -65,7 +65,7 @@ export default async function GuestsPage({
         ? `${guests.length} of ${stats.total} guests match`
         : `${guests.length} guests`;
 
-  // Preserve the current view when the filter form submits.
+  // Preserve the current filters when toggling between list and group view.
   const filterHref = (overrides: Record<string, string>) => {
     const search = new URLSearchParams();
     if (view === "groups") search.set("view", "groups");
@@ -86,14 +86,17 @@ export default async function GuestsPage({
         title="Guests & RSVPs"
         subtitle={`${stats.total} invited across ${stats.parties} ${pluralize(stats.parties, "invitation")}`}
         actions={
-          <>
-            <Link
-              href={filterHref({ view: view === "groups" ? "" : "groups" })}
-              className="btn btn-outline !px-4 !py-2.5"
-            >
-              {view === "groups" ? "Guest list view" : "Group view"}
-            </Link>
-          </>
+          <div className="flex flex-wrap items-center gap-3">
+            <ViewToggle
+              view={view}
+              listHref={filterHref({ view: "" })}
+              groupsHref={filterHref({ view: "groups" })}
+            />
+            <AddPeopleDialog
+              parties={parties}
+              defaultTab={view === "groups" ? "group" : "guest"}
+            />
+          </div>
         }
       />
 
@@ -119,49 +122,6 @@ export default async function GuestsPage({
       {/* ── Group view ──────────────────────────────────────────────── */}
       {view === "groups" ? (
         <div className="mt-6 space-y-6">
-          <Card
-            title="New invitation group"
-            description="Guests are invited and RSVP as a group — one household, one invitation."
-          >
-            <form
-              action={createParty}
-              className="grid grid-cols-1 gap-4 sm:grid-cols-[1.4fr_1fr_auto]"
-            >
-              <div>
-                <label className="label" htmlFor="new-party-name">
-                  Group name
-                </label>
-                <input
-                  id="new-party-name"
-                  name="name"
-                  placeholder="The Sanchez Family"
-                  required
-                  className="field"
-                />
-              </div>
-              <div>
-                <label className="label" htmlFor="new-party-side">
-                  Side
-                </label>
-                <select
-                  id="new-party-side"
-                  name="side"
-                  defaultValue="both"
-                  className="field"
-                >
-                  <option value="bride">Bride&apos;s side</option>
-                  <option value="groom">Groom&apos;s side</option>
-                  <option value="both">Both / shared</option>
-                </select>
-              </div>
-              <div className="flex items-end">
-                <button type="submit" className="btn btn-primary w-full">
-                  Create group
-                </button>
-              </div>
-            </form>
-          </Card>
-
           {partyDetails.length === 0 ? (
             <p className="border border-line bg-white px-4 py-16 text-center text-sm text-muted">
               No invitation groups match those filters.

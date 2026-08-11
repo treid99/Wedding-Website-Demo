@@ -155,28 +155,177 @@ function inviteCodeFor(name: string): string {
   return candidate;
 }
 
-export async function createParty(form: FormData): Promise<void> {
+// ── Adding people (the "Add" dialog) ────────────────────────────────────────
+//
+// createGroupWithMembers supersedes the old create-an-empty-group action: a
+// group and its people are always saved together.
+
+/** Result shape shared by the two dialog actions, for useActionState. */
+export type AddResult =
+  | { ok: true; message: string }
+  | { ok: false; error: string }
+  | null;
+
+const SIDES = ["bride", "groom", "both"];
+
+function normalizeSide(value: string): string {
+  return SIDES.includes(value) ? value : "both";
+}
+
+type MemberInput = { first: string; last: string; child: boolean };
+
+/** Parses the JSON member list the dialog submits as one hidden field. */
+function parseMembers(raw: string): MemberInput[] {
+  if (!raw.trim()) return [];
+
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((entry) => {
+        const row = entry as Record<string, unknown>;
+        return {
+          first: String(row?.first ?? "").trim().slice(0, 80),
+          last: String(row?.last ?? "").trim().slice(0, 80),
+          child: row?.child === true,
+        };
+      })
+      .filter((member) => member.first || member.last)
+      .slice(0, 30);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Creates an invitation group and its members in one transaction.
+ *
+ * The group and its people are saved together so the couple never has to create
+ * an empty group, go find it, and then fill it in.
+ */
+export async function createGroupWithMembers(
+  _prev: AddResult,
+  form: FormData,
+): Promise<AddResult> {
   await requireAdmin();
 
   const name = str(form, "name", 120);
-  if (!name) return;
+  if (!name) return { ok: false, error: "Give the group a name." };
 
-  const side = str(form, "side");
+  const members = parseMembers(str(form, "members", 8000));
+  const db = getDb();
 
-  getDb()
-    .prepare(
-      `INSERT INTO parties (name, invite_code, address, notes, side)
-       VALUES (?, ?, ?, ?, ?)`,
-    )
-    .run(
+  const insertParty = db.prepare(
+    `INSERT INTO parties (name, invite_code, address, notes, side)
+     VALUES (?, ?, ?, ?, ?)`,
+  );
+  const insertGuest = db.prepare(
+    `INSERT INTO guests (party_id, first_name, last_name, is_child, rsvp_status)
+     VALUES (?, ?, ?, ?, 'pending')`,
+  );
+
+  db.transaction(() => {
+    const { lastInsertRowid } = insertParty.run(
       name,
       inviteCodeFor(name),
       str(form, "address", 300),
       str(form, "notes", 1000),
-      ["bride", "groom", "both"].includes(side) ? side : "both",
+      normalizeSide(str(form, "side")),
     );
 
+    for (const member of members) {
+      insertGuest.run(
+        lastInsertRowid,
+        member.first || "Guest",
+        member.last,
+        member.child ? 1 : 0,
+      );
+    }
+  })();
+
   revalidateAdmin();
+
+  return {
+    ok: true,
+    message: members.length
+      ? `Added ${name} with ${members.length} ${members.length === 1 ? "guest" : "guests"}.`
+      : `Added ${name}. You can add guests to it any time.`,
+  };
+}
+
+/**
+ * Adds one guest, either to an existing group or to a brand new one created in
+ * the same submission.
+ */
+export async function createGuestInGroup(
+  _prev: AddResult,
+  form: FormData,
+): Promise<AddResult> {
+  await requireAdmin();
+
+  const firstName = str(form, "first_name", 80);
+  const lastName = str(form, "last_name", 80);
+  if (!firstName && !lastName) {
+    return { ok: false, error: "Enter at least a first or last name." };
+  }
+
+  const mode = str(form, "group_mode");
+  const db = getDb();
+
+  let partyId: number | bigint | null = null;
+  let groupName = "";
+
+  if (mode === "new") {
+    groupName = str(form, "new_group_name", 120);
+    if (!groupName) {
+      return { ok: false, error: "Name the new group, or pick an existing one." };
+    }
+  } else {
+    partyId = num(form, "party_id");
+    if (partyId == null) {
+      return { ok: false, error: "Choose which group this guest belongs to." };
+    }
+
+    const party = db
+      .prepare("SELECT name FROM parties WHERE id = ?")
+      .get(partyId) as { name: string } | undefined;
+
+    if (!party) return { ok: false, error: "That group no longer exists." };
+    groupName = party.name;
+  }
+
+  const insertParty = db.prepare(
+    `INSERT INTO parties (name, invite_code, address, notes, side)
+     VALUES (?, ?, '', '', ?)`,
+  );
+  const insertGuest = db.prepare(
+    `INSERT INTO guests (party_id, first_name, last_name, is_child, rsvp_status)
+     VALUES (?, ?, ?, ?, 'pending')`,
+  );
+
+  db.transaction(() => {
+    if (mode === "new") {
+      const { lastInsertRowid } = insertParty.run(
+        groupName,
+        inviteCodeFor(groupName),
+        normalizeSide(str(form, "new_group_side")),
+      );
+      partyId = lastInsertRowid;
+    }
+
+    insertGuest.run(
+      partyId,
+      firstName || "Guest",
+      lastName,
+      bool(form, "is_child") ? 1 : 0,
+    );
+  })();
+
+  revalidateAdmin();
+
+  const who = [firstName, lastName].filter(Boolean).join(" ");
+  return { ok: true, message: `Added ${who} to ${groupName}.` };
 }
 
 export async function updateParty(form: FormData): Promise<void> {
