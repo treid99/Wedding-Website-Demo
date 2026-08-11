@@ -99,10 +99,12 @@ export function StatTile({
   return <div className="border border-line bg-white px-5 py-6">{body}</div>;
 }
 
+// Green for yes, red for no, neutral for not-yet — readable at a glance from
+// the colour alone, without having to stop and read every pill.
 const STATUS_STYLES: Record<string, string> = {
-  attending: "border-sage/40 bg-sage/10 text-sage-dark",
-  declined: "border-line bg-cream text-muted",
-  pending: "border-gold/40 bg-gold/10 text-gold",
+  attending: "border-moss-line bg-moss-soft text-moss",
+  pending: "border-line bg-cream text-muted",
+  declined: "border-clay-line bg-clay-soft text-clay",
 };
 
 export function StatusPill({ status }: { status: string }) {

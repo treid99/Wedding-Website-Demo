@@ -17,6 +17,14 @@
   /* Destructive actions — a muted terracotta, not a jarring pure red */
   --color-clay: #a0574a;
   --color-clay-dark: #85463b;
+  --color-clay-soft: #f7eae7;
+  --color-clay-line: #e3c7c0;
+
+  /* Affirmative states. Distinct from sage, which is page furniture, so an
+     "attending" pill reads as a status and not as more chrome. */
+  --color-moss: #4d7a48;
+  --color-moss-soft: #eaf2e7;
+  --color-moss-line: #c3d8bc;
 
   /* ── Type ─────────────────────────────────────────────── */
   --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;

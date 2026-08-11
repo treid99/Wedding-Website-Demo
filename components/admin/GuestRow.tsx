@@ -1,6 +1,7 @@
 import { deleteGuest, updateGuest } from "@/lib/admin-actions";
 import { MEAL_CHOICES, RSVP_STATUSES, mealLabel } from "@/lib/wedding";
 import type { GuestWithContext } from "@/lib/types";
+import { PencilIcon } from "./icons";
 import { StatusPill } from "./ui";
 
 /**
@@ -57,8 +58,12 @@ export default function GuestRow({
           )}
         </p>
 
-        <span className="hidden text-xs tracking-[0.1em] text-sage uppercase group-open:hidden lg:inline">
-          Edit
+        {/* The whole summary is the click target; this is the affordance for it. */}
+        <span
+          aria-hidden
+          className="hidden justify-self-end text-muted transition-colors group-hover:text-ink group-open:hidden lg:inline-flex"
+        >
+          <PencilIcon />
         </span>
       </summary>
 

@@ -1,5 +1,6 @@
 import { all, one } from "./db";
 import { matchesSearch } from "./search";
+import type { RsvpStatusFilter, SeatedFilter } from "./guest-params";
 import {
   REGISTRY_SORTS,
   type RegistryAvailability,
@@ -330,20 +331,21 @@ export function findPartiesByName(search: string): (Party & { guests: Guest[] })
 
 export type GuestFilters = {
   q?: string;
-  status?: "all" | "pending" | "attending" | "declined";
+  /** Empty (or omitted) means every status — see lib/guest-params. */
+  statuses?: RsvpStatusFilter[];
   partyId?: number | null;
-  seated?: "all" | "seated" | "unseated";
+  seated?: SeatedFilter;
 };
 
 export function getGuests(filters: GuestFilters = {}): GuestWithContext[] {
-  const { q = "", status = "all", partyId = null, seated = "all" } = filters;
+  const { q = "", statuses = [], partyId = null, seated = "all" } = filters;
 
   const where: string[] = [];
   const params: unknown[] = [];
 
-  if (status !== "all") {
-    where.push("g.rsvp_status = ?");
-    params.push(status);
+  if (statuses.length > 0) {
+    where.push(`g.rsvp_status IN (${statuses.map(() => "?").join(", ")})`);
+    params.push(...statuses);
   }
 
   if (partyId != null) {
@@ -389,7 +391,7 @@ export type PartyWithDetail = Party & {
 export function getPartiesWithGuests(
   filters: GuestFilters = {},
 ): PartyWithDetail[] {
-  const { q = "", status = "all", seated = "all" } = filters;
+  const { q = "", statuses = [], seated = "all" } = filters;
 
   const parties = all<Party>("SELECT * FROM parties ORDER BY name");
   const guests = all<Guest>("SELECT * FROM guests ORDER BY is_child, id");
@@ -412,7 +414,8 @@ export function getPartiesWithGuests(
   }
 
   const matchesStatus = (guest: Guest) =>
-    status === "all" || guest.rsvp_status === status;
+    statuses.length === 0 ||
+    statuses.includes(guest.rsvp_status as RsvpStatusFilter);
 
   const matchesSeated = (guest: Guest) =>
     seated === "all" ||
@@ -444,12 +447,50 @@ export function getPartiesWithGuests(
       // An empty group has no members to qualify, so judge it on its name alone
       // rather than hiding it the moment any status filter is on.
       const statusHit =
-        (status === "all" && seated === "all") ||
+        (statuses.length === 0 && seated === "all") ||
         qualifying.length > 0 ||
         party.guests.length === 0;
 
       return nameHit && statusHit;
     });
+}
+
+export type Paged<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  perPage: number;
+  pageCount: number;
+  from: number;
+  to: number;
+};
+
+/**
+ * Slices an already-filtered list into one page.
+ *
+ * Deliberately post-filter rather than a SQL LIMIT: name matching runs in JS so
+ * that it can fold accents and match substrings (see lib/search.ts), which
+ * means SQLite cannot know the result count before the filter has run. Paging
+ * in SQL would page the *unfiltered* rows and quietly hide matches — the exact
+ * bug this has to avoid. Materialising the full match set costs nothing at a
+ * wedding's scale; a list large enough to care would need the matching pushed
+ * into SQLite via FTS or a custom collation first.
+ */
+export function paginate<T>(rows: T[], page: number, perPage: number): Paged<T> {
+  const total = rows.length;
+  const pageCount = Math.max(1, Math.ceil(total / perPage));
+  const safePage = Math.min(Math.max(1, page), pageCount);
+  const offset = (safePage - 1) * perPage;
+
+  return {
+    items: rows.slice(offset, offset + perPage),
+    total,
+    page: safePage,
+    perPage,
+    pageCount,
+    from: total === 0 ? 0 : offset + 1,
+    to: Math.min(offset + perPage, total),
+  };
 }
 
 export function getPartyOptions(): { id: number; name: string }[] {

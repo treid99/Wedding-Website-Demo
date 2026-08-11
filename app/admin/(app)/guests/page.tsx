@@ -2,83 +2,88 @@ import type { Metadata } from "next";
 import AddPeopleDialog from "@/components/admin/AddPeopleDialog";
 import GuestFilters from "@/components/admin/GuestFilters";
 import GuestRow from "@/components/admin/GuestRow";
+import Pagination from "@/components/admin/Pagination";
 import PartyCard from "@/components/admin/PartyCard";
 import ViewToggle from "@/components/admin/ViewToggle";
 import { AdminHeader, StatTile } from "@/components/admin/ui";
 import { pluralize } from "@/lib/format";
 import {
+  PER_PAGE_OPTIONS,
+  buildGuestHref,
+  hasActiveFilters,
+  parseGuestQuery,
+} from "@/lib/guest-params";
+import {
   getGuests,
   getPartiesWithGuests,
   getPartyOptions,
   getRsvpStats,
-  // Aliased: the filter-bar component below is also called GuestFilters.
-  type GuestFilters as GuestFilterState,
+  paginate,
 } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Guests & RSVPs" };
 
 type Search = Record<string, string | string[] | undefined>;
 
-function first(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
-}
-
 export default async function GuestsPage({
   searchParams,
 }: {
   searchParams: Promise<Search>;
 }) {
-  const raw = await searchParams;
-
-  const view = first(raw.view) === "groups" ? "groups" : "list";
-  const q = first(raw.q);
-  const statusRaw = first(raw.status);
-  const seatedRaw = first(raw.seated);
-
-  const status: NonNullable<GuestFilterState["status"]> = (
-    ["attending", "pending", "declined"] as const
-  ).includes(statusRaw as never)
-    ? (statusRaw as NonNullable<GuestFilterState["status"]>)
-    : "all";
-
-  const seated: NonNullable<GuestFilterState["seated"]> = (
-    ["seated", "unseated"] as const
-  ).includes(seatedRaw as never)
-    ? (seatedRaw as NonNullable<GuestFilterState["seated"]>)
-    : "all";
+  const query = parseGuestQuery(await searchParams);
+  const { view, page, per } = query;
 
   const stats = getRsvpStats();
   const parties = getPartyOptions();
-  const filters = { q, status, seated };
 
-  const guests = getGuests(filters);
-  const partyDetails = view === "groups" ? getPartiesWithGuests(filters) : [];
+  const filters = { q: query.q, statuses: query.statuses, seated: query.seated };
 
-  const filtered = Boolean(q.trim() || status !== "all" || seated !== "all");
+  // Filter across the whole guest list, then slice — the page you're on must
+  // never limit what a search can find.
+  const guests = paginate(getGuests(filters), page, per);
+  const groups = paginate(
+    view === "groups" ? getPartiesWithGuests(filters) : [],
+    page,
+    per,
+  );
+
+  const filtered = hasActiveFilters(query);
 
   const summary =
     view === "groups"
       ? filtered
-        ? `${partyDetails.length} of ${stats.parties} ${pluralize(stats.parties, "group")} match`
-        : `${partyDetails.length} ${pluralize(partyDetails.length, "group")}`
+        ? `${groups.total} of ${stats.parties} ${pluralize(stats.parties, "group")} match`
+        : `${groups.total} ${pluralize(groups.total, "group")}`
       : filtered
-        ? `${guests.length} of ${stats.total} guests match`
-        : `${guests.length} guests`;
+        ? `${guests.total} of ${stats.total} guests match`
+        : `${guests.total} guests`;
 
-  // Preserve the current filters when toggling between list and group view.
-  const filterHref = (overrides: Record<string, string>) => {
-    const search = new URLSearchParams();
-    if (view === "groups") search.set("view", "groups");
-    if (q) search.set("q", q);
-    if (status !== "all") search.set("status", status);
-    if (seated !== "all") search.set("seated", seated);
-    for (const [key, value] of Object.entries(overrides)) {
-      if (value) search.set(key, value);
-      else search.delete(key);
-    }
-    const query = search.toString();
-    return `/admin/guests${query ? `?${query}` : ""}`;
-  };
+  const paged = view === "groups" ? groups : guests;
+
+  const hrefWith = (overrides: Partial<typeof query>) =>
+    buildGuestHref({ ...query, ...overrides });
+
+  const perOptions = PER_PAGE_OPTIONS[view].map((value) => ({
+    value,
+    // Changing the page size invalidates the offset, so start over at page 1.
+    href: hrefWith({ per: value, page: 1 }),
+  }));
+
+  const pagination = (hint?: string) => (
+    <Pagination
+      page={paged.page}
+      pageCount={paged.pageCount}
+      from={paged.from}
+      to={paged.to}
+      total={paged.total}
+      noun={view === "groups" ? "groups" : "guests"}
+      perPage={per}
+      perOptions={perOptions}
+      prevHref={paged.page > 1 ? hrefWith({ page: paged.page - 1 }) : null}
+      nextHref={paged.page < paged.pageCount ? hrefWith({ page: paged.page + 1 }) : null}
+      hint={hint}
+    />
+  );
 
   return (
     <>
@@ -89,8 +94,10 @@ export default async function GuestsPage({
           <div className="flex flex-wrap items-center gap-3">
             <ViewToggle
               view={view}
-              listHref={filterHref({ view: "" })}
-              groupsHref={filterHref({ view: "groups" })}
+              // Switching view keeps the filters but resets paging: the two
+              // views count different things, so page 3 doesn't carry over.
+              listHref={buildGuestHref({ ...query, view: "list", page: 1, per: PER_PAGE_OPTIONS.list[0] })}
+              groupsHref={buildGuestHref({ ...query, view: "groups", page: 1, per: PER_PAGE_OPTIONS.groups[0] })}
             />
             <AddPeopleDialog
               parties={parties}
@@ -111,25 +118,26 @@ export default async function GuestsPage({
       </div>
 
       {/* ── Filters ─────────────────────────────────────────────────── */}
-      <GuestFilters
-        view={view}
-        q={q}
-        status={status}
-        seated={seated}
-        summary={summary}
-      />
+      <GuestFilters query={query} summary={summary} />
 
       {/* ── Group view ──────────────────────────────────────────────── */}
       {view === "groups" ? (
-        <div className="mt-6 space-y-6">
-          {partyDetails.length === 0 ? (
+        <div className="mt-6">
+          {groups.total === 0 ? (
             <p className="border border-line bg-white px-4 py-16 text-center text-sm text-muted">
               No invitation groups match those filters.
             </p>
           ) : (
-            partyDetails.map((party) => (
-              <PartyCard key={party.id} party={party} allParties={parties} />
-            ))
+            <>
+              <div className="space-y-6">
+                {groups.items.map((party) => (
+                  <PartyCard key={party.id} party={party} allParties={parties} />
+                ))}
+              </div>
+              <div className="mt-6 border border-line bg-white">
+                {pagination()}
+              </div>
+            </>
           )}
         </div>
       ) : (
@@ -144,19 +152,18 @@ export default async function GuestsPage({
             <span />
           </div>
 
-          {guests.length === 0 ? (
+          {guests.total === 0 ? (
             <p className="px-4 py-16 text-center text-sm text-muted">
               No guests match those filters.
             </p>
           ) : (
-            guests.map((guest) => (
-              <GuestRow key={guest.id} guest={guest} parties={parties} />
-            ))
+            <>
+              {guests.items.map((guest) => (
+                <GuestRow key={guest.id} guest={guest} parties={parties} />
+              ))}
+              {pagination("click any row to edit")}
+            </>
           )}
-
-          <p className="border-t border-line bg-cream/40 px-4 py-3 text-xs text-muted">
-            Click any row to edit
-          </p>
         </div>
       )}
     </>

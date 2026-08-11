@@ -35,7 +35,8 @@ export default function PartyCard({
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 border-b border-line bg-cream/60 px-5 py-4">
         <div className="min-w-0 flex-1">
-          <h3 className="display text-xl text-ink">{party.name}</h3>
+          {/* 600 is the heaviest Cormorant weight loaded in app/layout.tsx. */}
+          <h3 className="display text-xl font-semibold text-ink">{party.name}</h3>
 
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
             <code className="bg-white px-1.5 py-0.5 font-mono text-[0.7rem] tracking-wider text-gold">
@@ -111,7 +112,10 @@ export default function PartyCard({
             key={guest.id}
             className="flex items-center justify-between gap-3 px-5 py-3"
           >
-            <div className="min-w-0">
+            {/* Name and status sit on one line — a two-line stack per guest
+                made a six-person invitation taller than a screen. It wraps
+                rather than truncates when the notes are long. */}
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
               <p className="text-sm text-ink">
                 {guest.first_name} {guest.last_name}
                 {guest.is_child === 1 ? (
@@ -120,15 +124,17 @@ export default function PartyCard({
                   </span>
                 ) : null}
               </p>
-              <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted">
-                <StatusPill status={guest.rsvp_status} />
-                {guest.meal_choice ? (
-                  <span>{mealLabel(guest.meal_choice)}</span>
-                ) : null}
-                {guest.dietary_notes ? (
-                  <span className="text-gold">{guest.dietary_notes}</span>
-                ) : null}
-              </p>
+
+              <StatusPill status={guest.rsvp_status} />
+
+              {guest.meal_choice ? (
+                <span className="text-xs text-muted">
+                  {mealLabel(guest.meal_choice)}
+                </span>
+              ) : null}
+              {guest.dietary_notes ? (
+                <span className="text-xs text-gold">{guest.dietary_notes}</span>
+              ) : null}
             </div>
 
             <div className="shrink-0">
