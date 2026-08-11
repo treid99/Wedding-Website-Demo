@@ -1,4 +1,5 @@
 import { all, one } from "./db";
+import { matchesSearch } from "./search";
 import {
   REGISTRY_SORTS,
   type RegistryAvailability,
@@ -340,15 +341,6 @@ export function getGuests(filters: GuestFilters = {}): GuestWithContext[] {
   const where: string[] = [];
   const params: unknown[] = [];
 
-  const term = q.trim();
-  if (term) {
-    where.push(
-      "(g.first_name LIKE ? OR g.last_name LIKE ? OR (g.first_name || ' ' || g.last_name) LIKE ? OR p.name LIKE ?)",
-    );
-    const like = `%${term}%`;
-    params.push(like, like, like, like);
-  }
-
   if (status !== "all") {
     where.push("g.rsvp_status = ?");
     params.push(status);
@@ -362,7 +354,7 @@ export function getGuests(filters: GuestFilters = {}): GuestWithContext[] {
   if (seated === "seated") where.push("g.table_id IS NOT NULL");
   if (seated === "unseated") where.push("g.table_id IS NULL");
 
-  return all<GuestWithContext>(
+  const rows = all<GuestWithContext>(
     `SELECT g.*, p.name AS party_name, p.side AS party_side, t.name AS table_name
      FROM guests g
      JOIN parties p ON p.id = g.party_id
@@ -370,6 +362,11 @@ export function getGuests(filters: GuestFilters = {}): GuestWithContext[] {
      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
      ORDER BY p.name, g.is_child, g.id`,
     params,
+  );
+
+  // Name matching happens here rather than in SQL — see lib/search.ts for why.
+  return rows.filter((guest) =>
+    matchesSearch(q, guest.first_name, guest.last_name, guest.party_name),
   );
 }
 
@@ -381,7 +378,19 @@ export type PartyWithDetail = Party & {
   pending: number;
 };
 
-export function getPartiesWithGuests(): PartyWithDetail[] {
+/**
+ * Invitation groups for the admin group view.
+ *
+ * Honours the same filter bar as the flat guest list: a group is kept when its
+ * own name matches the query, or when any member does. Status and seating
+ * filters keep a group if at least one member qualifies — the group is the unit
+ * being listed, so hiding it because one member doesn't match would be wrong.
+ */
+export function getPartiesWithGuests(
+  filters: GuestFilters = {},
+): PartyWithDetail[] {
+  const { q = "", status = "all", seated = "all" } = filters;
+
   const parties = all<Party>("SELECT * FROM parties ORDER BY name");
   const guests = all<Guest>("SELECT * FROM guests ORDER BY is_child, id");
   const submissions = all<RsvpSubmission>(
@@ -402,17 +411,45 @@ export function getPartiesWithGuests(): PartyWithDetail[] {
     }
   }
 
-  return parties.map((party) => {
-    const members = byParty.get(party.id) ?? [];
-    return {
-      ...party,
-      guests: members,
-      latestSubmission: latestByParty.get(party.id),
-      attending: members.filter((g) => g.rsvp_status === "attending").length,
-      declined: members.filter((g) => g.rsvp_status === "declined").length,
-      pending: members.filter((g) => g.rsvp_status === "pending").length,
-    };
-  });
+  const matchesStatus = (guest: Guest) =>
+    status === "all" || guest.rsvp_status === status;
+
+  const matchesSeated = (guest: Guest) =>
+    seated === "all" ||
+    (seated === "seated" ? guest.table_id != null : guest.table_id == null);
+
+  return parties
+    .map((party) => {
+      const members = byParty.get(party.id) ?? [];
+      return {
+        ...party,
+        guests: members,
+        latestSubmission: latestByParty.get(party.id),
+        attending: members.filter((g) => g.rsvp_status === "attending").length,
+        declined: members.filter((g) => g.rsvp_status === "declined").length,
+        pending: members.filter((g) => g.rsvp_status === "pending").length,
+      };
+    })
+    .filter((party) => {
+      const nameHit =
+        matchesSearch(q, party.name) ||
+        party.guests.some((guest) =>
+          matchesSearch(q, guest.first_name, guest.last_name, party.name),
+        );
+
+      const qualifying = party.guests.filter(
+        (guest) => matchesStatus(guest) && matchesSeated(guest),
+      );
+
+      // An empty group has no members to qualify, so judge it on its name alone
+      // rather than hiding it the moment any status filter is on.
+      const statusHit =
+        (status === "all" && seated === "all") ||
+        qualifying.length > 0 ||
+        party.guests.length === 0;
+
+      return nameHit && statusHit;
+    });
 }
 
 export function getPartyOptions(): { id: number; name: string }[] {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import GuestFilters from "@/components/admin/GuestFilters";
 import GuestRow from "@/components/admin/GuestRow";
 import PartyCard from "@/components/admin/PartyCard";
 import { AdminHeader, Card, StatTile } from "@/components/admin/ui";
@@ -10,7 +11,8 @@ import {
   getPartiesWithGuests,
   getPartyOptions,
   getRsvpStats,
-  type GuestFilters,
+  // Aliased: the filter-bar component above is also called GuestFilters.
+  type GuestFilters as GuestFilterState,
 } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Guests & RSVPs" };
@@ -20,13 +22,6 @@ type Search = Record<string, string | string[] | undefined>;
 function first(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 }
-
-const STATUS_TABS = [
-  { value: "all", label: "All" },
-  { value: "attending", label: "Attending" },
-  { value: "pending", label: "Pending" },
-  { value: "declined", label: "Declined" },
-] as const;
 
 export default async function GuestsPage({
   searchParams,
@@ -40,22 +35,35 @@ export default async function GuestsPage({
   const statusRaw = first(raw.status);
   const seatedRaw = first(raw.seated);
 
-  const status: NonNullable<GuestFilters["status"]> = (
+  const status: NonNullable<GuestFilterState["status"]> = (
     ["attending", "pending", "declined"] as const
   ).includes(statusRaw as never)
-    ? (statusRaw as NonNullable<GuestFilters["status"]>)
+    ? (statusRaw as NonNullable<GuestFilterState["status"]>)
     : "all";
 
-  const seated: NonNullable<GuestFilters["seated"]> = (
+  const seated: NonNullable<GuestFilterState["seated"]> = (
     ["seated", "unseated"] as const
   ).includes(seatedRaw as never)
-    ? (seatedRaw as NonNullable<GuestFilters["seated"]>)
+    ? (seatedRaw as NonNullable<GuestFilterState["seated"]>)
     : "all";
 
   const stats = getRsvpStats();
   const parties = getPartyOptions();
-  const guests = getGuests({ q, status, seated });
-  const partyDetails = view === "groups" ? getPartiesWithGuests() : [];
+  const filters = { q, status, seated };
+
+  const guests = getGuests(filters);
+  const partyDetails = view === "groups" ? getPartiesWithGuests(filters) : [];
+
+  const filtered = Boolean(q.trim() || status !== "all" || seated !== "all");
+
+  const summary =
+    view === "groups"
+      ? filtered
+        ? `${partyDetails.length} of ${stats.parties} ${pluralize(stats.parties, "group")} match`
+        : `${partyDetails.length} ${pluralize(partyDetails.length, "group")}`
+      : filtered
+        ? `${guests.length} of ${stats.total} guests match`
+        : `${guests.length} guests`;
 
   // Preserve the current view when the filter form submits.
   const filterHref = (overrides: Record<string, string>) => {
@@ -100,75 +108,13 @@ export default async function GuestsPage({
       </div>
 
       {/* ── Filters ─────────────────────────────────────────────────── */}
-      <form
-        action="/admin/guests"
-        method="get"
-        className="mt-6 flex flex-wrap items-end gap-3 border border-line bg-white px-4 py-4"
-      >
-        {view === "groups" ? (
-          <input type="hidden" name="view" value="groups" />
-        ) : null}
-
-        <div className="min-w-48 flex-1">
-          <label className="label" htmlFor="guest-search">
-            Search name or group
-          </label>
-          <input
-            id="guest-search"
-            name="q"
-            defaultValue={q}
-            placeholder="Mitchell, Sarah, Okonkwo…"
-            className="field"
-          />
-        </div>
-
-        <div>
-          <label className="label" htmlFor="guest-status">
-            Status
-          </label>
-          <select
-            id="guest-status"
-            name="status"
-            defaultValue={status}
-            className="field w-auto"
-          >
-            {STATUS_TABS.map((tab) => (
-              <option key={tab.value} value={tab.value}>
-                {tab.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="label" htmlFor="guest-seated">
-            Seating
-          </label>
-          <select
-            id="guest-seated"
-            name="seated"
-            defaultValue={seated}
-            className="field w-auto"
-          >
-            <option value="all">Everyone</option>
-            <option value="seated">Seated</option>
-            <option value="unseated">Not seated</option>
-          </select>
-        </div>
-
-        <button type="submit" className="btn btn-primary !px-5 !py-2.5">
-          Filter
-        </button>
-
-        {q || status !== "all" || seated !== "all" ? (
-          <Link
-            href={view === "groups" ? "/admin/guests?view=groups" : "/admin/guests"}
-            className="pb-3 text-xs tracking-[0.1em] text-muted uppercase underline underline-offset-4 hover:text-ink"
-          >
-            Clear
-          </Link>
-        ) : null}
-      </form>
+      <GuestFilters
+        view={view}
+        q={q}
+        status={status}
+        seated={seated}
+        summary={summary}
+      />
 
       {/* ── Group view ──────────────────────────────────────────────── */}
       {view === "groups" ? (
@@ -216,9 +162,15 @@ export default async function GuestsPage({
             </form>
           </Card>
 
-          {partyDetails.map((party) => (
-            <PartyCard key={party.id} party={party} allParties={parties} />
-          ))}
+          {partyDetails.length === 0 ? (
+            <p className="border border-line bg-white px-4 py-16 text-center text-sm text-muted">
+              No invitation groups match those filters.
+            </p>
+          ) : (
+            partyDetails.map((party) => (
+              <PartyCard key={party.id} party={party} allParties={parties} />
+            ))
+          )}
         </div>
       ) : (
         /* ── Flat guest list ──────────────────────────────────────── */
@@ -243,8 +195,7 @@ export default async function GuestsPage({
           )}
 
           <p className="border-t border-line bg-cream/40 px-4 py-3 text-xs text-muted">
-            Showing {guests.length} of {stats.total} guests · click any row to
-            edit
+            Click any row to edit
           </p>
         </div>
       )}
