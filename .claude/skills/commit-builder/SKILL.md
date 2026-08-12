@@ -106,10 +106,15 @@ type: Subject line here
 
 Body paragraph here explaining the why.
 
-Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
+
+The trailer is deliberately model-agnostic — no model name, no version, no
+context-window suffix. Naming the model dates every commit and forces this file
+to be edited on each model release, which is exactly how it drifted out of sync
+before. Git treats the trailer as free text, so nothing depends on the name.
 
 3. Run `git status` after the commit to verify success
 4. Report the result to the user
@@ -121,4 +126,5 @@ EOF
 - NEVER skip pre-commit hooks (`--no-verify`)
 - NEVER amend previous commits unless the user explicitly asks
 - If a pre-commit hook fails, diagnose the issue, fix it, and create a NEW commit
-- Always append the `Co-Authored-By` line to the commit body
+- Always append the `Co-Authored-By` line to the commit body, exactly as written
+  above — `Claude <noreply@anthropic.com>`, never with a model name or version

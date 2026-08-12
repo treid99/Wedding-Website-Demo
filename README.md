@@ -184,7 +184,7 @@ actually serves:
 ./images/<name>.webp   2048px, q85   committed    ~10MB
         |
         +-> public/photos/full/<name>.webp    1600px, q80   generated  ~6MB
-        +-> public/photos/thumb/<name>.webp    600px, q75   generated  ~3MB
+        +-> public/photos/thumb/<name>.webp    600px, q75   generated  ~1.5MB
 ```
 
 2048px leaves headroom over the 1600px render tier without waste. Deriving 1600
