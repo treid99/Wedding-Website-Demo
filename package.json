@@ -10,7 +10,12 @@
     "photos:shrink": "node scripts/shrink-originals.mjs",
     "photos:build": "node scripts/build-photos.mjs",
     "db:reset": "node scripts/seed.mjs",
-    "setup": "npm run photos:build && npm run db:reset"
+    "setup": "npm run photos:build && npm run db:reset",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "playwright test --config playwright.unit.config.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",
@@ -20,6 +25,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.19.0",

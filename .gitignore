@@ -1,5 +1,6 @@
 node_modules/
 .next/
+.next-test/
 out/
 build/
 
@@ -15,6 +16,11 @@ build/
 /data/*.db
 /data/*.db-shm
 /data/*.db-wal
+
+# Test output — `npm run test:report` opens the last HTML report
+/test-results/
+/playwright-report/
+/blob-report/
 
 next-env.d.ts
 *.tsbuildinfo

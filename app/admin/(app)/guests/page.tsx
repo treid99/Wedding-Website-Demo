@@ -13,12 +13,12 @@ import {
   hasActiveFilters,
   parseGuestQuery,
 } from "@/lib/guest-params";
+import { paginate } from "@/lib/paginate";
 import {
   getGuests,
   getPartiesWithGuests,
   getPartyOptions,
   getRsvpStats,
-  paginate,
 } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Guests & RSVPs" };

@@ -81,6 +81,35 @@ Every dashboard write calls `revalidatePath` for the pages it affects.
 
 ---
 
+## Tests
+
+```bash
+npm test              # unit, then e2e
+npm run test:unit     # pure helpers in lib/ — a few seconds, no browser
+npm run test:e2e      # the running site, in Chrome
+npm run test:e2e -- guest-filters     # one file
+npm run test:report   # open the last HTML report
+```
+
+Playwright drives **the Chrome already on your machine** (`channel: "chrome"`),
+so there's no `npx playwright install` step and no browser builds in
+`node_modules`. Its runner also covers the unit tests, which keeps the project
+to one test framework — it compiles TypeScript and resolves the `@/` alias on
+its own.
+
+`test:e2e` builds the app and serves it in production mode on port 3100 from its
+own `.next-test` directory, so it neither needs nor disturbs a dev server on
+3000. Both can run at once.
+
+> **`npm run test:e2e` reseeds `data/wedding.db`.** Anything you entered in the
+> demo is discarded.
+
+See [`tests/README.md`](tests/README.md) for the layout, the two rules that keep
+a shared-database suite stable, and the assertion habits that came out of tests
+which passed against broken code.
+
+---
+
 ## Stack
 
 - **Next.js 15** (App Router) + React 19 + TypeScript
@@ -118,7 +147,10 @@ lib/
   actions.ts       public RSVP mutations
   admin-actions.ts every dashboard mutation
   auth.ts          demo session (read the warning)
-  registry-params.ts  URL <-> filter state; client-safe
+  search.ts        accent- and case-folding name matching
+  paginate.ts      page slicing; client-safe, so it stays unit-testable
+  guest-params.ts  URL <-> guest list filter state; client-safe
+  registry-params.ts  URL <-> registry filter state; client-safe
   wedding.ts       the wedding's fixed facts
 scripts/
   shrink-originals.mjs  one-time: makes ./images committable
@@ -126,7 +158,14 @@ scripts/
   schema.sql            drops and recreates everything
   seed.mjs              all seeding logic
   seed-data.mjs         all demo content in one file
+tests/
+  unit/            pure lib/ helpers
+  e2e/             the running site
 ```
+
+The `*-params` and `paginate` modules are deliberately outside `queries.ts`:
+that module is server-only through `lib/db`, and these need to be importable
+from client components and from unit tests.
 
 `lib/db.ts` imports `server-only`. If a client component ever reaches the
 database through an import chain, the build fails with a clear message instead of

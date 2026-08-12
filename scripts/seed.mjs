@@ -92,14 +92,32 @@ function main() {
 
   const db = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
+  // Dropping every table needs an exclusive lock. A dev server or a test run
+  // may be mid-read, so wait for it rather than failing the whole reseed.
+  db.pragma("busy_timeout = 10000");
 
-  // Schema drops everything, so run it with FKs off (the file sets that itself).
-  db.exec(readFileSync(SCHEMA_PATH, "utf8"));
-  db.pragma("foreign_keys = ON");
+  // Schema drops everything, so run it with FKs off. The PRAGMA has to be set
+  // out here rather than from inside the transaction below, where it is a no-op.
+  db.pragma("foreign_keys = OFF");
+  const schema = readFileSync(SCHEMA_PATH, "utf8").replace(
+    /^\s*PRAGMA[^;]*;/gim,
+    "",
+  );
 
   const counts = {};
 
+  /**
+   * Drop, recreate and repopulate in ONE transaction.
+   *
+   * SQLite makes DDL transactional, and that matters here: with the schema
+   * applied separately, anything reading the database between the CREATE and
+   * the inserts sees every table present and empty. Reseeding under a running
+   * dev server would then serve a page with no guests on it, or fail mid-render
+   * — which is exactly what it used to do.
+   */
   db.transaction(() => {
+    db.exec(schema);
+
     // ── Content blocks ──────────────────────────────────────────────────────
     const insertBlock = db.prepare(
       `INSERT INTO content_blocks (key, label, eyebrow, title, body, sort_order)
@@ -345,6 +363,8 @@ function main() {
     counts.guests = guestCount;
     counts.rsvp_submissions = submissionCount;
   })();
+
+  db.pragma("foreign_keys = ON");
 
   // Sanity check: every pre-seated name must have matched a real guest.
   const expectedSeated = Object.values(initialSeating).flat().length;

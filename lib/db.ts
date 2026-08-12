@@ -32,6 +32,10 @@ function open(): Database.Database {
   const db = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
+  // Wait for a writer instead of throwing SQLITE_BUSY the instant one holds the
+  // lock. `npm run db:reset` takes an exclusive lock for the length of a reseed,
+  // and without this a page rendering at that moment fails outright.
+  db.pragma("busy_timeout = 5000");
   migrate(db);
   return db;
 }
