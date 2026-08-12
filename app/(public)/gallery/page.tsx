@@ -25,6 +25,10 @@ export default function GalleryPage() {
           {photos.length} {pluralize(photos.length, "photograph")} · Click any
           photo to enlarge
         </p>
+
+        <p className="mt-3 text-center text-xs tracking-[0.14em] text-muted uppercase">
+          Credit: Chelsey Williams Photography, St. Thomas USVI
+        </p>
       </div>
     </>
   );

@@ -1,14 +1,24 @@
 /**
- * Derives web-sized photo assets from the full-resolution originals in ./images.
+ * Derives web-sized photo assets from the committed source photos in ./images.
  *
- *   ./images/<name>.jpg  ->  public/photos/full/<slug>.webp   (max 1600px, q80)
- *                            public/photos/thumb/<slug>.webp  (max 600px,  q75)
+ *   ./images/<name>.webp  ->  public/photos/full/<slug>.webp   (max 1600px, q80)
+ *                             public/photos/thumb/<slug>.webp  (max 600px,  q75)
+ *
+ * Those sources are *not* the full-resolution originals: `npm run photos:shrink`
+ * already replaced them in place with 2048px q85 WebP so the set was small
+ * enough to commit. The full-resolution set does not live in this repo. 2048px
+ * is deliberate headroom over the 1600px tier below — see shrink-originals.mjs
+ * for why deriving from it is visually free.
+ *
+ * So ./images is the only photo source a fresh clone gets, and deleting it
+ * breaks `npm run setup`: this script exits on an empty source directory, and
+ * seed.mjs then has no data/photos.json to read.
  *
  * Also writes data/photos.json — a manifest carrying each photo's intrinsic
  * dimensions, which the gallery collage and hero carousel need in order to
  * reserve space and avoid layout shift.
  *
- * Originals are never modified. Safe to re-run; unchanged photos are skipped.
+ * Sources are never modified. Safe to re-run; unchanged photos are skipped.
  *
  *   npm run photos:build          # incremental
  *   npm run photos:build -- --force
@@ -31,7 +41,7 @@ const THUMB_WIDTH = 600;
 const CONCURRENCY = 4;
 const FORCE = process.argv.includes("--force");
 
-/** "Chelseywilliamsphotography-2017-2.jpg" -> "chelseywilliamsphotography-2017-2" */
+/** "Chelseywilliamsphotography-2017-2.webp" -> "chelseywilliamsphotography-2017-2" */
 function toSlug(filename) {
   return path
     .basename(filename, path.extname(filename))
