@@ -64,8 +64,8 @@ export default function TravelPage() {
             <p className="mt-6 text-[0.95rem] leading-[1.85] text-ink/80">
               A stone-and-timber inn built in 1848, set back from Main Street
               behind an acre of garden. The ceremony is on the terrace, dinner is
-              in the ballroom, and the whole thing is a twelve-minute walk from
-              the Warren House.
+              in the ballroom, and the shuttle from the hotel sets you down at the
+              front door.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -125,24 +125,22 @@ export default function TravelPage() {
       <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8 sm:py-20">
         <SectionHeading
           eyebrow="Where to Stay"
-          title="Two hotels holding rooms for us"
+          title="One hotel, holding a block of rooms"
         />
         <p className="mx-auto mt-7 max-w-xl text-center text-sm text-muted">
-          Both blocks include the shuttle to and from the venue. Rates below are
+          The block includes the shuttle to and from the venue. The rate below is
           the negotiated rate — you must book through the block to get it.
         </p>
 
-        <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-          {hotels.map((hotel, index) => (
+        <div className="mx-auto mt-12 grid max-w-2xl grid-cols-1 gap-6">
+          {hotels.map((hotel) => (
             <div
               key={hotel.id}
               className="flex flex-col border border-line bg-white p-8"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="eyebrow">
-                    {index === 0 ? "Our Recommendation" : "Also Great"}
-                  </p>
+                  <p className="eyebrow">Where Everyone's Staying</p>
                   <h3 className="display mt-2.5 text-2xl text-ink sm:text-3xl">
                     {hotel.name}
                   </h3>

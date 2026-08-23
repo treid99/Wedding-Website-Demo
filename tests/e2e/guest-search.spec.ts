@@ -28,23 +28,23 @@ test.beforeEach(async ({ page }) => {
 test.describe("flat guest list", () => {
   /**
    * Counts include everyone the query reaches through their *group* name, which
-   * is a field the matcher searches: "Daniel" finds Priya Rao too, because her
-   * invitation is called "Daniel & Priya Rao".
+   * is a field the matcher searches: "Aria" finds Ezra Fitz too, because his
+   * invitation is called "Aria Montgomery & Ezra Fitz".
    */
   const cases: [query: string, expected: number, why: string][] = [
-    ["Daniel", 2, "first name, and their group"],
-    ["Rao", 2, "last name"],
-    ["NiEl", 2, "mixed-case substring"],
-    ["rao daniel", 2, "reversed word order"],
-    ["tomas", 2, "accent folded (Tomás)"],
-    ["okonkwo", 4, "whole family"],
+    ["Aria", 2, "first name, and their group"],
+    ["Montgomery", 2, "last name"],
+    ["gOmEr", 2, "mixed-case substring"],
+    ["montgomery aria", 2, "reversed word order"],
+    ["zoe", 2, "accent folded (Zoë)"],
+    ["griffin", 5, "whole family, including the one regret"],
     ["zzzz", 0, "no match"],
   ];
 
   for (const [query, expected, why] of cases) {
     test(`finds "${query}" — ${why}`, async ({ page }) => {
       await page.goto("/admin/guests");
-      await expect(guestRows(page)).toHaveCount(31);
+      await expect(guestRows(page)).toHaveCount(47);
 
       await page.fill("#guest-search", query);
       await waitForUrl(page, (url) => url.includes("q="));
@@ -53,19 +53,26 @@ test.describe("flat guest list", () => {
   }
 });
 
+/**
+ * The group view pages at 15 by default and the seed has 20 groups, so these
+ * navigate with per=50. Landing on page 1 would make the pre-search assertion
+ * read 15 — the page size, not the group count — and a query whose only match
+ * sat on page 2 would still be found, quietly proving nothing about filtering
+ * before slicing. Paging has its own cover in guest-filters.
+ */
 test.describe("group view", () => {
   const cases: [query: string, expected: number, why: string][] = [
-    ["Rao", 1, "member last name"],
-    ["Daniel", 1, "member first name"],
-    ["niel", 1, "member substring"],
-    ["Mitchell Family", 1, "group's own name"],
+    ["Montgomery", 1, "member last name"],
+    ["Spencer", 1, "member first name"],
+    ["uckle", 1, "member substring"],
+    ["Addams Family", 1, "group's own name"],
     ["zzzz", 0, "no match"],
   ];
 
   for (const [query, expected, why] of cases) {
     test(`finds "${query}" — ${why}`, async ({ page }) => {
-      await page.goto("/admin/guests?view=groups");
-      await expect(groupCards(page)).toHaveCount(14);
+      await page.goto("/admin/guests?view=groups&per=50");
+      await expect(groupCards(page)).toHaveCount(20);
 
       await page.fill("#guest-search", query);
       await waitForUrl(page, (url) => url.includes("q="));
@@ -74,7 +81,7 @@ test.describe("group view", () => {
   }
 
   test("a status filter keeps a group when any one member qualifies", async ({ page }) => {
-    await page.goto("/admin/guests?view=groups");
+    await page.goto("/admin/guests?view=groups&per=50");
     await openFilterMenu(page, "Status");
     await page.locator('label:has-text("Attending") input').first().uncheck();
     await page.locator('label:has-text("Pending") input').first().uncheck();
@@ -82,7 +89,7 @@ test.describe("group view", () => {
 
     const matching = await groupCards(page).count();
     expect(matching).toBeGreaterThan(0);
-    expect(matching).toBeLessThan(14);
+    expect(matching).toBeLessThan(20);
   });
 });
 
@@ -91,17 +98,17 @@ test.describe("debounce", () => {
     await page.goto("/admin/guests");
     await expect(page.locator('button:text-is("Search")')).toHaveCount(0);
 
-    await page.fill("#guest-search", "Brennan");
-    await waitForUrl(page, (url) => url.includes("Brennan"));
+    await page.fill("#guest-search", "Hopper");
+    await waitForUrl(page, (url) => url.includes("Hopper"));
     await expect(guestRows(page)).toHaveCount(4);
   });
 
   test("Enter submits without waiting out the timer", async ({ page }) => {
     await page.goto("/admin/guests");
     await page.click("#guest-search");
-    await page.keyboard.type("Demir");
+    await page.keyboard.type("Buckley");
     await page.keyboard.press("Enter");
-    await waitForUrl(page, (url) => url.includes("Demir"));
+    await waitForUrl(page, (url) => url.includes("Buckley"));
   });
 
   test("keeps focus and every character while typing through a search", async ({ page }) => {
@@ -111,13 +118,13 @@ test.describe("debounce", () => {
     // Type past the debounce so a navigation lands mid-word, then keep going:
     // this is exactly where re-syncing the input from props used to eat
     // keystrokes and visibly snap the field back to a stale value.
-    await page.keyboard.type("Mit", { delay: 60 });
-    await waitForUrl(page, (url) => url.includes("Mit"));
-    await page.keyboard.type("chell", { delay: 60 });
+    await page.keyboard.type("Gil", { delay: 60 });
+    await waitForUrl(page, (url) => url.includes("Gil"));
+    await page.keyboard.type("more", { delay: 60 });
 
-    await expect(page.locator("#guest-search")).toHaveValue("Mitchell");
+    await expect(page.locator("#guest-search")).toHaveValue("Gilmore");
     await expect(page.locator("#guest-search")).toBeFocused();
-    await waitForUrl(page, (url) => url.includes("Mitchell"));
+    await waitForUrl(page, (url) => url.includes("Gilmore"));
     await expect(guestRows(page)).toHaveCount(3);
   });
 
@@ -126,27 +133,27 @@ test.describe("debounce", () => {
     const before = await page.evaluate(() => history.length);
 
     await page.click("#guest-search");
-    await page.keyboard.type("Ferreira", { delay: 40 });
-    await waitForUrl(page, (url) => url.includes("Ferreira"));
+    await page.keyboard.type("Harrington", { delay: 40 });
+    await waitForUrl(page, (url) => url.includes("Harrington"));
 
-    // Eight keystrokes, at most one history entry: debounced text edits replace.
+    // Ten keystrokes, at most one history entry: debounced text edits replace.
     const after = await page.evaluate(() => history.length);
     expect(after - before).toBeLessThanOrEqual(1);
   });
 
   test("the inline clear button resets the search", async ({ page }) => {
-    await page.goto("/admin/guests?q=Ferreira");
+    await page.goto("/admin/guests?q=Harrington");
     await page.click('button[aria-label="Clear search"]');
     await waitForUrl(page, (url) => !url.includes("q="));
-    await expect(guestRows(page)).toHaveCount(31);
+    await expect(guestRows(page)).toHaveCount(47);
   });
 });
 
 test("filters survive the view toggle", async ({ page }) => {
-  await page.goto("/admin/guests?q=Rao");
+  await page.goto("/admin/guests?q=Rose");
   await page.locator('[aria-label="Choose a view"] a:has-text("Groups")').click();
   await waitForUrl(page, (url) => url.includes("view=groups"));
 
-  expect(page.url()).toContain("q=Rao");
+  expect(page.url()).toContain("q=Rose");
   await expect(page.locator('[aria-live="polite"]').first()).toContainText(/match/i);
 });

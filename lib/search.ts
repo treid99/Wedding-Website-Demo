@@ -2,7 +2,7 @@
  * Name matching for the guest list and RSVP lookup.
  *
  * This runs in JavaScript rather than SQL on purpose. SQLite's LIKE is
- * case-insensitive for ASCII only, so it can't match "tomas" against "Tomás",
+ * case-insensitive for ASCII only, so it can't match "zoe" against "Zoë",
  * and matching tokens in any order would need one clause per token. A wedding
  * guest list is a few hundred rows at most, so folding and comparing in process
  * is instant and buys much better matching. (The registry is paginated over an
@@ -26,10 +26,10 @@ export function normalizeForSearch(value: string): string {
  * True when every whitespace-separated token in `query` appears somewhere in
  * `fields`, in any order.
  *
- *   "niel"        -> matches "Daniel Rao"       (substring, any case)
- *   "rao daniel"  -> matches "Daniel Rao"       (order independent)
- *   "tomas"       -> matches "Tomás Ferreira"   (accent folded)
- *   ""            -> matches everything         (no filter applied)
+ *   "gomer"            -> matches "Aria Montgomery" (substring, any case)
+ *   "montgomery aria"  -> matches "Aria Montgomery" (order independent)
+ *   "zoe"              -> matches "Zoë Washburne"   (accent folded)
+ *   ""                 -> matches everything        (no filter applied)
  */
 export function matchesSearch(
   query: string,

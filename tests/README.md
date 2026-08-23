@@ -59,8 +59,8 @@ data or the new and never the empty tables in between. `lib/db.ts` also sets
 `busy_timeout`, so a render that lands during the write waits instead of
 throwing.
 
-`inflateGuestList()` adds 40 filler groups (54 groups / 191 guests) for the
-pagination specs. The demo's 31 guests never fill a 50-row page, so every
+`inflateGuestList()` adds 37 filler groups (57 groups / 195 guests) for the
+pagination specs. The demo's 47 guests never fill a 50-row page, so every
 pagination control would render in its only-one-page state and prove nothing.
 
 ## Waiting

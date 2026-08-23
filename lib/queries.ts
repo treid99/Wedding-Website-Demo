@@ -296,7 +296,7 @@ export function getPartyWithGuests(partyId: number): PartyWithGuests | undefined
  * Resolves a typed name to candidate parties.
  *
  * Matches against first name, last name, the concatenated full name, and the
- * party name, so "Mitchell", "Sarah", "sarah mitchell" and "The Mitchell
+ * party name, so "Addams", "Morticia", "morticia addams" and "The Addams
  * Family" all find the same invitation.
  */
 export function findPartiesByName(search: string): (Party & { guests: Guest[] })[] {

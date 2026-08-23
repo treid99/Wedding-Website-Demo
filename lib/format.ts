@@ -56,8 +56,8 @@ export function pluralize(count: number, singular: string, plural?: string): str
  * The addressee line for a group's envelope.
  *
  * `envelope_name` is optional — an empty one inherits the group name, so
- * "The Mitchell Family" needs no separate entry while "Margaret Whitfield" can
- * be addressed as "Mrs. Margaret Whitfield". Always read the field through
+ * "The Addams Family" needs no separate entry while "Steve Harrington" can
+ * be addressed as "Mr. Steve Harrington". Always read the field through
  * this helper so the fallback can't be forgotten at one of the call sites.
  */
 export function envelopeName(party: {

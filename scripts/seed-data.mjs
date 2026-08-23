@@ -89,7 +89,7 @@ And so: September seventeenth, two thousand twenty-seven. David's Country Inn. W
     label: "Travel — introduction",
     eyebrow: "Getting There",
     title: "Come to the country for a weekend",
-    body: `Hackettstown sits in the hills of northwest New Jersey, about an hour from Newark and a little over an hour from Manhattan. Below you'll find written directions from every direction, two hotels holding rooms for us, and a shuttle that means nobody has to think about driving.`,
+    body: `Hackettstown sits in the hills of northwest New Jersey, about an hour from Newark and a little over an hour from Manhattan. Below you'll find written directions from every direction, the hotel holding a block of rooms for us, and a shuttle that means nobody has to think about driving.`,
     sort_order: 40,
   },
   {
@@ -169,30 +169,17 @@ export const carouselCaptions = [
 
 export const hotels = [
   {
-    name: "The Warren House Inn",
-    address: "412 Mountain Avenue, Hackettstown, NJ 07840",
-    phone: "(908) 555-0188",
-    rate: "$179 / night",
+    name: "Hanover Marriott",
+    address: "1401 NJ-10 E, Whippany, NJ 07981",
+    phone: "(973) 555-0240",
+    rate: "$189 / night",
     block_code: "REIDWED27",
     cutoff: "Book by August 17, 2027",
-    distance: "0.6 miles from the venue — about a 12-minute walk",
-    booking_url: "https://example.com/warren-house-inn/reserve?block=REIDWED27",
+    distance: "24 miles from the venue — about 30 minutes by car",
+    booking_url: "https://example.com/hanover-marriott/reserve?block=REIDWED27",
     notes:
-      "Our recommendation, and where most of the family is staying. A restored 1890s brick hotel on the edge of town with 42 rooms, a decent bar that will stay open late for us, and breakfast included. Mention the block code by phone or use the link — the discounted rate does not appear on the public booking page.",
+      "The single block for the weekend, and where the whole party is staying — family, wedding party, and the shuttle all start here. Full-service hotel off Route 10 with a bar that will stay open late for us, free parking, and suites that sleep four if you are travelling with kids. Mention the block code by phone or use the link — the discounted rate does not appear on the public booking page.",
     sort_order: 1,
-  },
-  {
-    name: "Musconetcong Lodge & Suites",
-    address: "1900 Route 46 East, Netcong, NJ 07857",
-    phone: "(973) 555-0264",
-    rate: "$139 / night",
-    block_code: "JT0917",
-    cutoff: "Book by August 24, 2027",
-    distance: "6.4 miles from the venue — about 11 minutes by car",
-    booking_url: "https://example.com/musconetcong-lodge/reserve?group=JT0917",
-    notes:
-      "The practical option: newer, larger rooms, free parking, an indoor pool, and suites that sleep four if you're travelling with kids. Slightly out of town, but it's the second shuttle stop so you're covered either way.",
-    sort_order: 2,
   },
 ];
 
@@ -251,7 +238,7 @@ export const scheduleEvents = [
     day_order: 1,
     time_label: "5:00 PM",
     title: "Welcome Drinks",
-    location: "The Warren House Inn — the back bar",
+    location: "Hanover Marriott — the lobby bar",
     description:
       "Anybody in town early, come find us. No program, no toasts, no seating chart. We'll be the two people who cannot stop checking the weather app.",
     attire: "Whatever you travelled in",
@@ -272,10 +259,10 @@ export const scheduleEvents = [
     day_label: "Friday, September 17 — Wedding Day",
     day_order: 2,
     time_label: "3:15 PM",
-    title: "Shuttle departs the Musconetcong Lodge",
-    location: "Musconetcong Lodge & Suites — main entrance",
+    title: "First shuttle departs the Hanover Marriott",
+    location: "Hanover Marriott — main entrance",
     description:
-      "First pickup. Two coaches, about 25 minutes to the venue with the Warren House stop in between. Please be outside five minutes early.",
+      "First coach. About 30 minutes to the venue, so this one has you there with time to spare. Please be outside five minutes early.",
     attire: "",
     sort_order: 3,
   },
@@ -283,10 +270,10 @@ export const scheduleEvents = [
     day_label: "Friday, September 17 — Wedding Day",
     day_order: 2,
     time_label: "3:40 PM",
-    title: "Shuttle departs The Warren House Inn",
-    location: "The Warren House Inn — Mountain Avenue entrance",
+    title: "Second shuttle departs the Hanover Marriott",
+    location: "Hanover Marriott — main entrance",
     description:
-      "Second pickup, arriving at the inn around 3:55. If you'd rather walk it, it's twelve flat minutes down High Street.",
+      "Second and last coach from the hotel, arriving at the inn around 4:10. Miss it and you are driving yourself.",
     attire: "",
     sort_order: 4,
   },
@@ -363,7 +350,7 @@ export const scheduleEvents = [
     title: "Return Shuttles",
     location: "David's Country Inn — front drive",
     description:
-      "Two runs back to both hotels, Warren House first. The 11:45 is the last one — after that it's a fifteen-minute cab and a long wait for it.",
+      "Two runs back to the Hanover Marriott. The 11:45 is the last one — after that it's a fifteen-minute cab and a long wait for it.",
     attire: "",
     sort_order: 11,
   },
@@ -372,7 +359,7 @@ export const scheduleEvents = [
     day_order: 2,
     time_label: "11:15 PM — late",
     title: "After Party",
-    location: "The Warren House Inn — the back bar",
+    location: "Hanover Marriott — the lobby bar",
     description:
       "The bar is ours until it isn't. There will be a grilled cheese situation around midnight. No obligation whatsoever, but this is historically where the good stories come from.",
     attire: "Ties optional and, frankly, discouraged",
@@ -383,7 +370,7 @@ export const scheduleEvents = [
     day_order: 3,
     time_label: "9:30 AM — 11:30 AM",
     title: "Farewell Brunch",
-    location: "The Warren House Inn — the sun room",
+    location: "Hanover Marriott — the atrium",
     description:
       "Drop-in, come as you are, no program at all. Coffee, eggs, and a chance to say a proper goodbye before the drive home. Collect your car from the venue lot any time before noon.",
     attire: "Pajamas would be a bold choice",
@@ -425,7 +412,7 @@ export const faqItems = [
   {
     question: "Are children invited?",
     answer:
-      "Children who are named on your invitation are absolutely invited, and there's a kids' meal option on the RSVP form. Beyond that we're keeping the evening mostly adults — the reception runs late and the bar is central to the plan. Both hotels can recommend sitters, and a few families are splitting one; email us and we'll connect you.",
+      "Children who are named on your invitation are absolutely invited, and there's a kids' meal option on the RSVP form. Beyond that we're keeping the evening mostly adults — the reception runs late and the bar is central to the plan. The hotel can recommend sitters, and a few families are splitting one; email us and we'll connect you.",
     category: "RSVP",
     sort_order: 5,
   },
@@ -439,14 +426,14 @@ export const faqItems = [
   {
     question: "How do I get there, and where should I stay?",
     answer:
-      "Everything lives on the Travel page: written directions from all four directions, an embedded map, and the two hotels holding discounted rooms for us. Book through those blocks before the cutoff dates — the rates aren't available on the public booking pages.",
+      "Everything lives on the Travel page: written directions from all four directions, an embedded map, and the hotel holding discounted rooms for us. Book through the block before the cutoff date — the rate isn't available on the public booking page.",
     category: "Travel",
     sort_order: 7,
   },
   {
     question: "Is there a shuttle?",
     answer:
-      "Yes, and please use it. Two coaches run from both hotels before the ceremony and make two return trips at 11:00 and 11:45 PM. Exact times are on the Schedule page. It's free, it's included, and it means nobody has to make a decision about driving at eleven o'clock at night.",
+      "Yes, and please use it. Two coaches run from the Hanover Marriott before the ceremony and make two return trips at 11:00 and 11:45 PM. Exact times are on the Schedule page. It's free, it's included, and it means nobody has to make a decision about driving at eleven o'clock at night.",
     category: "Travel",
     sort_order: 8,
   },
@@ -586,196 +573,308 @@ export const registryItems = rawRegistry.map(
 
 export const registryStores = [CB, WS, TG];
 
-// ── Guest list: 14 parties, 41 guests ────────────────────────────────────────
+// ── Guest list: 20 parties, 47 guests ────────────────────────────────────────
+// The invitation list is a deliberate crowd of fictional households — the
+// Gilmores, the Griffins, the Hecks, the Rosewood six, Hawkins, Schitt's Creek
+// and the Addamses — a demo guest list made of invented strangers is impossible
+// to hold in your head while clicking around the admin. Recognisable names make
+// a mis-sorted row, a lost group or a guest moved to the wrong table obvious at
+// a glance, which invented ones never did.
+//
 // `status` values seed a realistic mix so the admin dashboard has real numbers.
-// A party with any responded guest also gets an rsvp_submissions row.
+// A party with any responded guest also gets an rsvp_submissions row, so the
+// three all-pending groups here (Sinclair, Henderson, Schitt) are what proves
+// the "no submission on record" path renders at all.
+//
+// Several specific shapes below are load-bearing for tests/e2e — change them and
+// read the failures before assuming flake:
+//   · Roland & Jocelyn Schitt is the only three-person all-pending group, and
+//     the public RSVP round trip submits against it.
+//   · Joyce Byers & Jim Hopper is the only four-person group and deliberately
+//     has no `envelope`, so it covers both the inherit-from-name fallback and
+//     the "4 guests will be removed" cascade warning.
+//   · Zoë Washburne is the only accented name, so searching "zoe" is the one
+//     assertion that would catch accent folding regressing in lib/search.
 
 export const parties = [
   {
-    name: "The Mitchell Family",
-    invite_code: "MITCH01",
+    name: "Lorelai & Rory Gilmore",
+    invite_code: "GILM01",
     // Optional: `envelope` overrides the addressee line on the invitation.
     // Groups without one inherit their name — see envelopeName() in lib/format.
-    envelope: "Mr. & Mrs. David Mitchell",
-    address: "18 Ridgeview Terrace, Morristown, NJ 07960",
+    envelope: "Ms. Lorelai Gilmore & Ms. Rory Gilmore",
+    address: "37 Maple Street, Stars Hollow, CT 06776",
     side: "bride",
-    notes: "Jenna's aunt and uncle. Uncle David will ask about the open bar. Emma is 9.",
+    notes: "Jenna's oldest friends. Luke is Lorelai's plus one and has already offered to caffeinate the entire cocktail hour. Rory may be filing something from the reception.",
     message:
-      "We would not miss this for anything in the world. David is already talking about the bar. Emma has asked twice whether there will be a dance floor — please confirm there will be a dance floor.",
+      "We are in, all three of us. Luke says he will bring coffee, which is not a joke and not negotiable. Rory may be on a deadline, so please forgive one laptop under the table.",
     guests: [
-      { first: "Sarah", last: "Mitchell", status: "attending", meal: "salmon", dietary: "" },
-      { first: "David", last: "Mitchell", status: "attending", meal: "filet", dietary: "" },
-      { first: "Emma", last: "Mitchell", status: "attending", meal: "kids", child: true, dietary: "No nuts of any kind — she carries an EpiPen." },
+      { first: "Lorelai", last: "Gilmore", status: "attending", meal: "filet", dietary: "" },
+      { first: "Rory", last: "Gilmore", status: "attending", meal: "salmon", dietary: "" },
+      { first: "Luke", last: "Danes", status: "attending", meal: "filet", dietary: "Coffee at the table from the moment we sit down, if the kitchen can manage it." },
     ],
   },
   {
-    name: "Margaret Whitfield",
-    invite_code: "WHITF02",
-    envelope: "Mrs. Margaret Whitfield",
-    address: "7 Chestnut Lane, Chatham, NJ 07928",
-    side: "bride",
-    notes: "Jenna's grandmother. Seat her near the family and away from the band's speakers.",
-    message:
-      "Of course I am coming. I have had the dress since March. Put me somewhere I can see everything and hear something.",
-    guests: [
-      { first: "Margaret", last: "Whitfield", status: "attending", meal: "chicken", dietary: "Low sodium if the kitchen can manage it." },
-    ],
-  },
-  {
-    name: "Daniel & Priya Rao",
-    invite_code: "RAO03",
-    envelope: "Mr. Daniel Rao & Dr. Priya Rao",
-    address: "2214 W Cortland Street, Chicago, IL 60647",
+    name: "The Griffin Family",
+    invite_code: "GRIFF02",
+    envelope: "Mr. & Mrs. Peter Griffin",
+    address: "31 Spooner Street, Quahog, RI 02911",
     side: "groom",
-    notes: "Tom's college roommate. Flying in Thursday; Priya is the one who set them up, indirectly.",
+    notes: "Tom's cousins. Four coming and Meg staying home, which Lois was firm about. Stewie is a baby and goes to the kids' table under protest.",
     message:
-      "Flying in Thursday afternoon so count us in for welcome drinks. Priya maintains that she is responsible for this entire relationship and honestly the record supports her.",
+      "Four of us are coming and Meg is watching the house, which she has been told is an honour. Peter has questions about the open bar. Stewie has questions about the seating chart.",
     guests: [
-      { first: "Daniel", last: "Rao", status: "attending", meal: "filet", dietary: "" },
-      { first: "Priya", last: "Rao", status: "attending", meal: "vegetarian", dietary: "Vegetarian, no egg." },
+      { first: "Peter", last: "Griffin", status: "attending", meal: "filet", dietary: "" },
+      { first: "Lois", last: "Griffin", status: "attending", meal: "chicken", dietary: "" },
+      { first: "Chris", last: "Griffin", status: "attending", meal: "filet", dietary: "" },
+      { first: "Stewie", last: "Griffin", status: "attending", meal: "kids", child: true, dietary: "No nuts of any kind — Lois carries the EpiPen." },
+      { first: "Meg", last: "Griffin", status: "declined", meal: null, dietary: "" },
     ],
   },
   {
-    name: "The Okonkwo Family",
-    invite_code: "OKON04",
-    address: "51 Harborview Road, Stamford, CT 06902",
+    name: "Aria Montgomery & Ezra Fitz",
+    invite_code: "MONT03",
+    address: "112 Hollis Road, Rosewood, PA 19087",
+    side: "bride",
+    notes: "Jenna's Rosewood crowd. All six of them asked to be seated together, so Table 3 is theirs — see initialSeating below.",
+    message:
+      "Wouldn't miss it. Put us with Spencer and Emily or there will be a group chat about it.",
+    guests: [
+      { first: "Aria", last: "Montgomery", status: "attending", meal: "salmon", dietary: "" },
+      { first: "Ezra", last: "Fitz", status: "attending", meal: "filet", dietary: "" },
+    ],
+  },
+  {
+    name: "Spencer Hastings & Toby Cavanaugh",
+    invite_code: "HAST04",
+    address: "1465 Radley Lane, Rosewood, PA 19087",
+    side: "bride",
+    notes: "Rosewood, at Table 3 with Aria and Emily. Spencer has already audited the timeline and sent notes on it.",
+    message:
+      "Confirmed for both of us. I have read the schedule twice and have only two questions, which I will send separately.",
+    guests: [
+      { first: "Spencer", last: "Hastings", status: "attending", meal: "chicken", dietary: "" },
+      { first: "Toby", last: "Cavanaugh", status: "attending", meal: "filet", dietary: "" },
+    ],
+  },
+  {
+    name: "Emily Fields & Maya St. Germain",
+    invite_code: "FIEL05",
+    address: "204 Willow Court, Rosewood, PA 19087",
+    side: "bride",
+    notes: "Rosewood, Table 3 with the others. Maya's gluten allergy is medical, not a preference — flag it to the kitchen.",
+    message:
+      "Two yeses. Maya is celiac so a genuinely gluten free plate would be a real kindness — otherwise she is easy.",
+    guests: [
+      { first: "Emily", last: "Fields", status: "attending", meal: "salmon", dietary: "" },
+      { first: "Maya", last: "St. Germain", status: "attending", meal: "vegetarian", dietary: "Gluten free — celiac, not a preference." },
+    ],
+  },
+  {
+    name: "Joyce Byers & Jim Hopper",
+    invite_code: "HAWK06",
+    // No `envelope` on purpose: the group name is already how they would want to
+    // be addressed, and leaving it blank keeps the inherit-from-name fallback
+    // exercised by seeded data rather than only by entries added in the demo.
+    address: "Cabin 3, Mirkwood Road, Hawkins, IN 47331",
     side: "groom",
-    notes: "Tom's cousin. Twins are 7 — both kids' meals.",
+    notes: "Tom's side, from the Hawkins years. Will and Jane are at the kids' table. Hop has asked twice how long the ceremony runs.",
     message:
-      "All four of us are in. The twins have been informed that this is a fancy party and are taking it extremely seriously.",
+      "All four of us are coming. Hop wants it on the record that he is not dancing. Jane has informed us that he is.",
     guests: [
-      { first: "Chidi", last: "Okonkwo", status: "attending", meal: "chicken", dietary: "" },
-      { first: "Amara", last: "Okonkwo", status: "attending", meal: "salmon", dietary: "Shellfish allergy — cocktail hour raw bar is a problem." },
-      { first: "Zara", last: "Okonkwo", status: "attending", meal: "kids", child: true, dietary: "" },
-      { first: "Kene", last: "Okonkwo", status: "attending", meal: "kids", child: true, dietary: "" },
+      { first: "Joyce", last: "Byers", status: "attending", meal: "chicken", dietary: "" },
+      { first: "Jim", last: "Hopper", status: "attending", meal: "filet", dietary: "" },
+      { first: "Will", last: "Byers", status: "attending", meal: "kids", child: true, dietary: "" },
+      { first: "Jane", last: "Hopper", status: "attending", meal: "kids", child: true, dietary: "No mushrooms in anything, please." },
     ],
   },
   {
-    name: "Robert & Linda Callahan",
-    invite_code: "CALLA05",
-    address: "912 Beech Street, Bethlehem, PA 18018",
+    name: "Jonathan Byers & Nancy Wheeler",
+    invite_code: "HAWK07",
+    address: "88 Cornwallis Street, Apt 2, Boston, MA 02116",
     side: "groom",
-    notes: "Tom's parents' oldest friends. Robert is walking with a cane since March.",
+    notes: "Jonathan is Joyce's eldest. Nancy is named on the invitation rather than listed as a guest of — she asked, in writing.",
     message:
-      "Wouldn't dream of missing it. Robert is using a cane these days so a table with a short walk from the door would be a real kindness.",
+      "Both of us, and we can help with anything that needs carrying or photographing.",
     guests: [
-      { first: "Robert", last: "Callahan", status: "attending", meal: "filet", dietary: "" },
-      { first: "Linda", last: "Callahan", status: "attending", meal: "vegetarian", dietary: "Gluten free — celiac, not a preference." },
+      { first: "Jonathan", last: "Byers", status: "attending", meal: "filet", dietary: "" },
+      { first: "Nancy", last: "Wheeler", status: "attending", meal: "salmon", dietary: "" },
     ],
   },
   {
-    name: "Elena Vasquez & Marcus Webb",
-    invite_code: "VASQ06",
-    address: "440 Dean Street, Apt 5C, Brooklyn, NY 11217",
-    side: "bride",
-    notes: "Jenna's closest friend from grad school. Elena is a bridesmaid.",
-    message:
-      "Obviously. Let me know what you need me to carry, hold, or fix on the day — I am extremely available.",
-    guests: [
-      { first: "Elena", last: "Vasquez", status: "attending", meal: "salmon", dietary: "" },
-      { first: "Marcus", last: "Webb", status: "attending", meal: "filet", dietary: "" },
-    ],
-  },
-  {
-    name: "James Whitfield",
-    invite_code: "WHITF07",
-    address: "88 Larkspur Avenue, Denver, CO 80206",
-    side: "bride",
-    notes: "Jenna's cousin. Was a maybe for months because of a work trip.",
-    message:
-      "I am so sorry — the Singapore rotation lands exactly that week and I cannot move it. I will be insufferable about wanting photos. Save me a slice of something.",
-    guests: [
-      { first: "James", last: "Whitfield", status: "declined", meal: null, dietary: "" },
-    ],
-  },
-  {
-    name: "The Brennan Family",
-    invite_code: "BREN08",
-    address: "33 Oakhurst Drive, Wayne, NJ 07470",
-    side: "bride",
-    notes: "Family friends. Sean's plus one is named on the invitation.",
-    message: "Three yeses and one regret — Colleen has a conflict she cannot get out of. The rest of us will make up for her.",
-    guests: [
-      { first: "Patrick", last: "Brennan", status: "attending", meal: "chicken", dietary: "" },
-      { first: "Colleen", last: "Brennan", status: "declined", meal: null, dietary: "" },
-      { first: "Sean", last: "Brennan", status: "attending", meal: "filet", dietary: "" },
-      { first: "Nora", last: "Brennan", status: "attending", meal: "vegetarian", dietary: "Vegan if that's possible — happy with whatever if not." },
-    ],
-  },
-  {
-    name: "Dr. Yusuf & Hana Demir",
-    invite_code: "DEMIR09",
-    address: "76 Fairfield Road, Princeton, NJ 08540",
+    name: "Steve Harrington",
+    invite_code: "HAWK08",
+    envelope: "Mr. Steve Harrington",
+    address: "615 Loch Nora Drive, Hawkins, IN 47331",
     side: "groom",
-    notes: "Tom's mentor from his first job. No pork, and they don't drink.",
+    notes: "Flying solo and has volunteered to drive anyone who needs it. A one-person group, so the envelope override is the only thing that makes it read like an invitation.",
     message:
-      "We are honored to be asked and will be there. No alcohol for either of us — a good non-alcoholic option would be very welcome.",
+      "Solo, and I am the designated driver for whoever needs one. Seat me near the bar and far from the speakers.",
     guests: [
-      { first: "Yusuf", last: "Demir", status: "attending", meal: "salmon", dietary: "Halal — no pork, no alcohol in the sauces." },
-      { first: "Hana", last: "Demir", status: "attending", meal: "chicken", dietary: "Halal." },
+      { first: "Steve", last: "Harrington", status: "attending", meal: "filet", dietary: "" },
     ],
   },
   {
-    name: "Katie O'Sullivan & Guest",
-    invite_code: "OSULL10",
-    address: "1219 Spring Garden Street, Philadelphia, PA 19123",
-    side: "bride",
-    notes: "Jenna's coworker. Plus one still unnamed as of the last email.",
+    name: "Robin Buckley",
+    invite_code: "HAWK09",
+    envelope: "Ms. Robin Buckley",
+    address: "615 Loch Nora Drive, Apt B, Hawkins, IN 47331",
+    side: "groom",
+    notes: "Coming alone. Vegetarian, and will mention it herself about four more times before September.",
+    message: "In! Vegetarian, and I will bring it up again closer to the date.",
+    guests: [
+      { first: "Robin", last: "Buckley", status: "attending", meal: "vegetarian", dietary: "Vegetarian — no fish either." },
+    ],
+  },
+  {
+    name: "Lucas Sinclair",
+    invite_code: "HAWK10",
+    address: "4819 Sycamore Lane, Hawkins, IN 47331",
+    side: "groom",
+    notes: "Hasn't answered yet — there is a basketball tournament that weekend he is still waiting on.",
     message: "",
     guests: [
-      { first: "Katie", last: "O'Sullivan", status: "pending", meal: null, dietary: "" },
-      { first: "Guest of", last: "Katie O'Sullivan", status: "pending", meal: null, dietary: "" },
+      { first: "Lucas", last: "Sinclair", status: "pending", meal: null, dietary: "" },
     ],
   },
   {
-    name: "The Lindqvist Family",
-    invite_code: "LIND11",
-    address: "Sturegatan 42, 114 36 Stockholm, Sweden",
+    name: "Dustin Henderson",
+    invite_code: "HAWK11",
+    address: "21 Cherry Oak Drive, Hawkins, IN 47331",
     side: "groom",
-    notes: "Tom's mother's side. Travelling the furthest by a wide margin.",
+    notes: "Still deciding. Every follow-up has come back as another question about the sound system.",
     message: "",
     guests: [
-      { first: "Anders", last: "Lindqvist", status: "pending", meal: null, dietary: "" },
-      { first: "Ingrid", last: "Lindqvist", status: "pending", meal: null, dietary: "" },
-      { first: "Otto", last: "Lindqvist", status: "pending", meal: null, dietary: "" },
+      { first: "Dustin", last: "Henderson", status: "pending", meal: null, dietary: "" },
     ],
   },
   {
-    name: "Grace & Tomás Ferreira",
-    invite_code: "FERR12",
-    address: "605 Alder Court, Raleigh, NC 27601",
+    name: "Johnny & Moira Rose",
+    invite_code: "ROSE12",
+    envelope: "Mr. & Mrs. Johnny Rose",
+    address: "Rosebud Motel, Room 6, Schitt's Creek, ON L0K 1A0",
+    side: "both",
+    notes: "Known to both of us. Moira introduced them at a benefit and has claimed full credit at every opportunity since.",
+    message:
+      "We accept, with bells on. Moira would like the wine list in advance and a note on whether the lighting is warm or cool.",
+    guests: [
+      { first: "Johnny", last: "Rose", status: "attending", meal: "filet", dietary: "" },
+      { first: "Moira", last: "Rose", status: "attending", meal: "salmon", dietary: "No garnish on the plate. This has been raised more than once." },
+    ],
+  },
+  {
+    name: "David Rose & Patrick Brewer",
+    invite_code: "ROSE13",
+    address: "1 Elm Street, Apt 2, Schitt's Creek, ON L0K 1A0",
+    side: "groom",
+    notes: "David has asked about the dress code three times. Patrick has answered on his behalf three times.",
+    message:
+      "Both of us, obviously. David would like to know the dress code again. Patrick would like you to ignore that.",
+    guests: [
+      { first: "David", last: "Rose", status: "attending", meal: "vegetarian", dietary: "No cheese of any kind — a texture thing, not an allergy." },
+      { first: "Patrick", last: "Brewer", status: "attending", meal: "chicken", dietary: "" },
+    ],
+  },
+  {
+    name: "Alexis Rose & Ted Mullens",
+    invite_code: "ROSE14",
+    address: "Rosebud Motel, Room 7, Schitt's Creek, ON L0K 1A0",
+    side: "groom",
+    notes: "One yes and one regret inside the same group — Ted is in the Galápagos through the autumn and cannot move it.",
+    message:
+      "Just me! Ted is still in the Galápagos with the turtles, which is a sentence I say a lot now. I will be there and I am bringing energy.",
+    guests: [
+      { first: "Alexis", last: "Rose", status: "attending", meal: "salmon", dietary: "" },
+      { first: "Ted", last: "Mullens", status: "declined", meal: null, dietary: "" },
+    ],
+  },
+  {
+    name: "Stevie Budd",
+    invite_code: "CREEK15",
+    envelope: "Ms. Stevie Budd",
+    address: "Rosebud Motel, Front Desk, Schitt's Creek, ON L0K 1A0",
+    side: "groom",
+    notes: "Coming alone and has said, in writing, that she will not be doing a reading.",
+    message:
+      "Yes. I am not doing a reading, giving a toast, or appearing in any photograph that has been staged.",
+    guests: [
+      { first: "Stevie", last: "Budd", status: "attending", meal: "filet", dietary: "" },
+    ],
+  },
+  {
+    name: "Roland & Jocelyn Schitt",
+    invite_code: "SCHITT16",
+    envelope: "Mayor & Mrs. Roland Schitt",
+    address: "3 Fifth Avenue, Schitt's Creek, ON L0K 1A0",
+    side: "both",
+    notes: "Three pending — the mayor keeps saying he will confirm this week. Roland Jr. would be at the kids' table.",
+    message: "",
+    guests: [
+      { first: "Roland", last: "Schitt", status: "pending", meal: null, dietary: "" },
+      { first: "Jocelyn", last: "Schitt", status: "pending", meal: null, dietary: "" },
+      { first: "Roland Jr.", last: "Schitt", status: "pending", meal: null, child: true, dietary: "" },
+    ],
+  },
+  {
+    name: "The Addams Family",
+    invite_code: "ADDAMS17",
+    envelope: "Mr. & Mrs. Gomez Addams",
+    address: "0001 Cemetery Lane, Westfield, NJ 07090",
     side: "bride",
-    notes: "Jenna's cousin. Grace is due in June — check on the drive.",
+    notes: "Jenna's godparents. Wednesday and Pugsley are at the kids' table. Thing needs no chair — only a tray beside Morticia.",
     message:
-      "We're in! Grace will be about three months out from the baby so she'll be the one holding a lime seltzer all night. No special treatment needed, just a heads up.",
+      "We accept with enormous pleasure. Thing is coming and requires no chair, only a small tray beside Morticia. Gomez has asked whether there will be a sword.",
     guests: [
-      { first: "Grace", last: "Ferreira", status: "attending", meal: "chicken", dietary: "No unpasteurized cheese or raw fish — pregnant." },
-      { first: "Tomás", last: "Ferreira", status: "attending", meal: "filet", dietary: "" },
+      { first: "Gomez", last: "Addams", status: "attending", meal: "filet", dietary: "" },
+      { first: "Morticia", last: "Addams", status: "attending", meal: "salmon", dietary: "Nothing brightly coloured on the plate." },
+      { first: "Wednesday", last: "Addams", status: "attending", meal: "kids", child: true, dietary: "She will ask what died. Answering honestly works best." },
+      { first: "Pugsley", last: "Addams", status: "attending", meal: "kids", child: true, dietary: "" },
+      { first: "Thing", last: "Addams", status: "attending", meal: "vegetarian", dietary: "No chair required — a small tray beside Morticia is plenty." },
     ],
   },
   {
-    name: "Walter & Joan Prescott",
-    invite_code: "PRES13",
-    address: "24 Sagamore Way, Sarasota, FL 34236",
-    side: "groom",
-    notes: "Tom's great-aunt and uncle. Walter is 84; travel was always going to be the question.",
+    name: "Fester Addams",
+    invite_code: "ADDAMS18",
+    envelope: "Mr. Fester Addams",
+    address: "0001 Cemetery Lane, Coach House, Westfield, NJ 07090",
+    side: "bride",
+    notes: "On his own invitation at Morticia's request, and a whole-party regret. He expects to be incarcerated that weekend and did not elaborate.",
     message:
-      "Our doctor has ruled out the flight, which we are heartbroken about. We will be raising a glass to you both at exactly 4:30 from the porch in Florida. Send pictures, and come see us.",
+      "Devastated to miss it. I will be detained — literally — through the end of September. Kindly save me a slice and do not ask which facility.",
     guests: [
-      { first: "Walter", last: "Prescott", status: "declined", meal: null, dietary: "" },
-      { first: "Joan", last: "Prescott", status: "declined", meal: null, dietary: "" },
+      { first: "Fester", last: "Addams", status: "declined", meal: null, dietary: "" },
     ],
   },
   {
-    name: "Nathan Reyes",
-    invite_code: "REYES14",
-    address: "3380 Sunset Boulevard, Apt 12, Los Angeles, CA 90026",
+    name: "Zoë & Hoban Washburne",
+    invite_code: "SEREN19",
+    envelope: "Mr. & Mrs. Hoban Washburne",
+    address: "Hangar 12, Eavesdown Docks, Persephone",
     side: "groom",
-    notes: "Tom's brother — best man. Giving the rehearsal dinner toast.",
+    notes:
+      "Tom's flying friends, and the only accented name on the list: searching \"zoe\" has to reach \"Zoë\", which is the whole reason lib/search folds diacritics in JS instead of leaning on SQLite's LIKE.",
     message:
-      "Best man reporting for duty. I have four minutes of material and I have been told that is three minutes too many. Flying in Wednesday.",
+      "Both of us, weather and engine permitting. Wash would like it known that he is available to fly anyone anywhere afterwards.",
     guests: [
-      { first: "Nathan", last: "Reyes", status: "attending", meal: "filet", dietary: "" },
+      { first: "Zoë", last: "Washburne", status: "attending", meal: "filet", dietary: "" },
+      { first: "Hoban", last: "Washburne", status: "attending", meal: "chicken", dietary: "" },
+    ],
+  },
+  {
+    name: "The Heck Family",
+    invite_code: "HECK20",
+    envelope: "Mr. & Mrs. Mike Heck",
+    address: "61 Arcadia Drive, Orson, IN 47374",
+    side: "groom",
+    notes: "Tom's cousins from Orson. Frankie has confirmed twice and changed the headcount both times, so treat the next email as the real one. Axl has been told in writing that a shirt is part of the dress code and that boxers are not trousers — somebody should sweep the parking lot before the ceremony. Sue will volunteer for anything offered and several things that were not; give her a job or she will invent one and it will involve a clipboard. Brick reads at the table and whispers the last word of his own sentences, which is not a problem, just a thing.",
+    message:
+      "All five of us! Mike says he does not need to be told twice about the tie, which means he needs to be told twice about the tie. Sue has already asked whether there is a committee she can be on. Brick would like to know whether there is a quiet room with a lamp. Axl will be dressed — I am putting that in writing so it is on the record. — Frankie",
+    guests: [
+      { first: "Mike", last: "Heck", status: "attending", meal: "filet", dietary: "" },
+      { first: "Frankie", last: "Heck", status: "attending", meal: "chicken", dietary: "" },
+      { first: "Axl", last: "Heck", status: "attending", meal: "filet", dietary: "Will eat whatever is nearest, including someone else's." },
+      { first: "Sue", last: "Heck", status: "attending", meal: "salmon", dietary: "New braces — nothing that needs real chewing, and no caramel." },
+      { first: "Brick", last: "Heck", status: "attending", meal: "kids", child: true, dietary: "He will be reading. A plate left beside him is fine." },
     ],
   },
 ];
@@ -797,10 +896,29 @@ export const seatingTables = [
 
 /**
  * A few guests start pre-seated so the seating board isn't empty on first load,
- * but most are left unseated so there's something to drag. Matched by full name.
+ * but most are left unseated so there's something to drag. Matched by full name,
+ * and seed.mjs warns when a name here matches nobody — so a typo is loud rather
+ * than a silently empty table.
+ *
+ * Table 3 is the Rosewood six, who asked to sit together; the kids' table is
+ * every guest flagged `child` except Roland Jr., whose group hasn't replied yet.
  */
 export const initialSeating = {
-  "Head Table": ["Nathan Reyes", "Elena Vasquez", "Marcus Webb"],
-  "Table 1": ["Sarah Mitchell", "David Mitchell", "Margaret Whitfield"],
-  "Kids' Table": ["Emma Mitchell", "Zara Okonkwo", "Kene Okonkwo"],
+  "Head Table": ["Lorelai Gilmore", "Luke Danes", "Rory Gilmore"],
+  "Table 1": ["Gomez Addams", "Morticia Addams", "Thing Addams"],
+  "Table 3": [
+    "Aria Montgomery",
+    "Ezra Fitz",
+    "Spencer Hastings",
+    "Toby Cavanaugh",
+    "Emily Fields",
+    "Maya St. Germain",
+  ],
+  "Kids' Table": [
+    "Stewie Griffin",
+    "Wednesday Addams",
+    "Pugsley Addams",
+    "Will Byers",
+    "Jane Hopper",
+  ],
 };

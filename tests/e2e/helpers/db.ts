@@ -80,14 +80,22 @@ export const guestsIn = (partyName: string): SeededGuest[] =>
   );
 
 /**
- * Adds 40 filler groups of 4, taking the seed's 14/31 to 54 groups and 191
+ * Adds 37 filler groups of 4, taking the seed's 20/47 to 57 groups and 195
  * guests.
  *
- * Pagination can't be tested on the demo data at all: 31 guests never fills a
+ * Pagination can't be tested on the demo data at all: 47 guests never fills a
  * 50-row page, so every control would render in its one-and-only-page state and
  * the test would prove nothing. Filler surnames are prefixed "Bulk" so a search
  * assertion can tell them from seeded guests.
+ *
+ * The group count is sized so the total stays *under* the largest page size the
+ * guest list offers (200). At 200 or more the "offers 50 / 100 / 200 a page"
+ * assertion stops testing what it says it does — the full list no longer fits on
+ * one page, so it would be asserting a truncated count and a second page. Grow
+ * the seed and this number has to come down to match.
  */
+const FILLER_GROUPS = 37;
+
 export function inflateGuestList(): void {
   const db = new Database(DB_PATH);
 
@@ -104,7 +112,7 @@ export function inflateGuestList(): void {
 
   try {
     db.transaction(() => {
-      for (let i = 0; i < 40; i += 1) {
+      for (let i = 0; i < FILLER_GROUPS; i += 1) {
         const surname = `Bulk${String(i).padStart(2, "0")}`;
         const { lastInsertRowid } = insertParty.run(
           `The ${surname} Family`,

@@ -31,10 +31,10 @@ test.describe("view toggle", () => {
   });
 
   test("carries the active search across", async ({ page }) => {
-    await page.goto("/admin/guests?q=Rao");
+    await page.goto("/admin/guests?q=Rose");
     await page.click('a:has-text("Groups")');
     await waitForUrl(page, (url) => url.includes("view=groups"));
-    expect(page.url()).toContain("q=Rao");
+    expect(page.url()).toContain("q=Rose");
   });
 
   test("the Add button is present in both views", async ({ page }) => {
@@ -56,7 +56,7 @@ test.describe("Add dialog", () => {
 
     await page.fill('input[name="first_name"]', "Testguest");
     await page.fill('input[name="last_name"]', "Alpha");
-    await page.selectOption('select[name="party_id"]', { label: "The Mitchell Family" });
+    await page.selectOption('select[name="party_id"]', { label: "The Addams Family" });
     await page.click('button:has-text("Add guest")');
 
     await expect(openDialog(page)).toHaveCount(0);
@@ -64,7 +64,7 @@ test.describe("Add dialog", () => {
 
     expect(countGuests()).toBe(guestsBefore + 1);
     expect(countParties()).toBe(partiesBefore);
-    expect(guestsIn("The Mitchell Family").map((g) => g.first_name)).toContain("Testguest");
+    expect(guestsIn("The Addams Family").map((g) => g.first_name)).toContain("Testguest");
   });
 
   test("adds a guest and their new group in one submission", async ({ page }) => {
@@ -124,8 +124,11 @@ test.describe("Add dialog", () => {
     expect(members).toHaveLength(3);
     expect(members.filter((g) => g.is_child === 1).map((g) => g.last_name)).toEqual(["Kid"]);
 
-    // Visible immediately, without having to go and search for it.
-    await page.goto("/admin/guests?view=groups");
+    // Visible immediately, without having to go and search for it. per=50
+    // because the group view pages at 15 and the seed already has 20 groups —
+    // on the default page size a brand new group can be created correctly and
+    // still not be on screen, which is a paging fact, not the bug this covers.
+    await page.goto("/admin/guests?view=groups&per=50");
     await expect(page.locator('h3:text("The Gamma Family")')).toBeVisible();
   });
 

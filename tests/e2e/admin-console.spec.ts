@@ -30,9 +30,9 @@ test.describe("logged in", () => {
   test("the dashboard surfaces a submitted RSVP", async ({ page }) => {
     // Submit as a guest first, then check the couple can see it.
     await page.goto("/rsvp");
-    await page.fill("#rsvp-lookup", "Lindqvist");
+    await page.fill("#rsvp-lookup", "Schitt");
     await page.click('button:has-text("Search")');
-    await expect(page.getByText("The Lindqvist Family")).toBeVisible();
+    await expect(page.getByText("Roland & Jocelyn Schitt")).toBeVisible();
 
     const members = page.locator("fieldset");
     await members.nth(0).locator('label:has-text("Joyfully accepts")').click();
@@ -40,15 +40,15 @@ test.describe("logged in", () => {
     await members.nth(0).locator('input[type="text"]').fill("No blue cheese, please");
     await members.nth(1).locator('label:has-text("Regretfully declines")').click();
     await members.nth(2).locator('label:has-text("Regretfully declines")').click();
-    await page.fill("#rsvp-message", "Flying in from Stockholm — Otto has school.");
+    await page.fill("#rsvp-message", "Driving down from Schitt's Creek — the motel can wait.");
     await page.click('button:has-text("Send our response")');
     await expect(page.getByText(/Thank you/)).toBeVisible();
 
     await page.goto("/admin");
-    await expect(page.getByText(/Stockholm/)).toBeVisible();
+    await expect(page.getByText(/the motel can wait/)).toBeVisible();
     await expect(page.getByText(/blue cheese/i)).toBeVisible();
 
-    await page.goto("/admin/guests?q=Lindqvist");
+    await page.goto("/admin/guests?q=Schitt");
     await expect(page.locator('summary:has-text("attending")')).not.toHaveCount(0);
     await expect(page.locator('summary:has-text("declined")')).not.toHaveCount(0);
   });

@@ -120,9 +120,9 @@ test.describe("registry", () => {
 test.describe("RSVP", () => {
   test("looks up a party, submits, and pre-fills on return", async ({ page }) => {
     await page.goto("/rsvp");
-    await page.fill("#rsvp-lookup", "Lindqvist");
+    await page.fill("#rsvp-lookup", "Schitt");
     await page.click('button:has-text("Search")');
-    await expect(page.getByText("The Lindqvist Family")).toBeVisible();
+    await expect(page.getByText("Roland & Jocelyn Schitt")).toBeVisible();
 
     const members = page.locator("fieldset");
     await expect(members).toHaveCount(3);
@@ -133,7 +133,7 @@ test.describe("RSVP", () => {
     await members.nth(1).locator('label:has-text("Joyfully accepts")').click();
     await members.nth(1).locator("select").selectOption("salmon");
     await members.nth(2).locator('label:has-text("Regretfully declines")').click();
-    await page.fill("#rsvp-message", "Flying in from Stockholm — Otto has school.");
+    await page.fill("#rsvp-message", "Driving down from Schitt's Creek — Roland Jr. has a school thing.");
     await page.click('button:has-text("Send our response")');
 
     await expect(page.getByText(/Thank you/)).toBeVisible();
@@ -142,9 +142,9 @@ test.describe("RSVP", () => {
 
     // Coming back shows what they already told us.
     await page.goto("/rsvp");
-    await page.fill("#rsvp-lookup", "Lindqvist");
+    await page.fill("#rsvp-lookup", "Schitt");
     await page.click('button:has-text("Search")');
-    await expect(page.getByText("The Lindqvist Family")).toBeVisible();
+    await expect(page.getByText("Roland & Jocelyn Schitt")).toBeVisible();
     await expect(page.locator("fieldset").nth(0).locator("select")).toHaveValue("filet");
     await expect(page.locator("fieldset").nth(0).locator('input[type="text"]')).toHaveValue(
       "No blue cheese, please",
@@ -153,7 +153,7 @@ test.describe("RSVP", () => {
 
   test("blocks an attending guest with no meal chosen", async ({ page }) => {
     await page.goto("/rsvp");
-    await page.fill("#rsvp-lookup", "O'Sullivan");
+    await page.fill("#rsvp-lookup", "Sinclair");
     await page.click('button:has-text("Search")');
     await expect(page.locator('button:has-text("Send our response")')).toBeVisible();
 

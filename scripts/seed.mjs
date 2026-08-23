@@ -64,16 +64,16 @@ function seededShuffle(items, seed) {
 
 /** Purchased registry items get a plausible buyer, chosen deterministically. */
 const PURCHASERS = [
-  "Sarah & David Mitchell",
-  "Nathan Reyes",
-  "The Okonkwo Family",
-  "Elena Vasquez",
-  "Margaret Whitfield",
-  "Robert & Linda Callahan",
-  "Daniel & Priya Rao",
-  "Grace & Tomás Ferreira",
-  "The Brennan Family",
-  "Yusuf & Hana Demir",
+  "Lorelai Gilmore & Luke Danes",
+  "Gomez & Morticia Addams",
+  "The Griffin Family",
+  "Steve Harrington",
+  "Johnny & Moira Rose",
+  "Rory Gilmore",
+  "Joyce Byers & Jim Hopper",
+  "Spencer Hastings & Toby Cavanaugh",
+  "David Rose & Patrick Brewer",
+  "Robin Buckley",
 ];
 
 function main() {
@@ -302,9 +302,16 @@ function main() {
     // Responses trickle in over the weeks *before* today. They must be in the
     // past: the admin dashboard orders submissions newest-first, so seeded
     // future dates would permanently outrank a real RSVP made in the demo.
+    //
+    // The span is divided by the party count rather than stepping a fixed
+    // number of days per party. A fixed step silently walks off the end of the
+    // window as parties are added — at three days each, the nineteenth group
+    // landed nine days in the *future* — and nothing here would have caught it.
     const now = Date.now();
+    const SPAN_DAYS = 45;
+    const lastIndex = Math.max(1, parties.length - 1);
     const respondedAtFor = (index) => {
-      const daysAgo = 45 - index * 3;
+      const daysAgo = SPAN_DAYS - Math.round((index * (SPAN_DAYS - 1)) / lastIndex);
       const stamp = new Date(now - daysAgo * 86_400_000);
       stamp.setHours(9 + (index % 9), (index * 7) % 60, 0, 0);
       return stamp.toISOString().slice(0, 19).replace("T", " ");

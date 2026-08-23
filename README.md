@@ -8,7 +8,9 @@ immediately, and content edited in the dashboard appears on the public pages.
 **Jenna & Tom · Friday, September 17, 2027 · David's Country Inn, Hackettstown, NJ**
 
 > This is a demo. Every guest, hotel, room-block code, shuttle time and price is
-> fabricated. The login validates nothing. There is no payment, email, or cart.
+> fabricated — the guest list is deliberately stocked with well-known fictional
+> households so a mis-sorted row or a lost group is obvious at a glance. The
+> login validates nothing. There is no payment, email, or cart.
 
 ---
 
@@ -44,7 +46,7 @@ deliberately not checked. See the warning at the top of `lib/auth.ts`.
 | `/` | Crossfading hero carousel, live countdown, welcome note, quick links |
 | `/story` | Four-chapter narrative, alternating photo/text (placeholder text riffs on *Pride and Prejudice*) |
 | `/gallery` | 16-photo masonry collage; click for a lightbox with ←/→/Esc |
-| `/travel` | Keyless Google Maps embed, written directions from N/S/E/W, two room-block hotels, airports & parking |
+| `/travel` | Keyless Google Maps embed, written directions from N/S/E/W, the room-block hotel, airports & parking |
 | `/schedule` | Three-day timeline: Thursday welcome drinks & rehearsal dinner, Friday wedding, Saturday brunch |
 | `/faq` | 16 questions grouped by category, as accordions |
 | `/registry` | 40 items, 3 stores. Search, price range, availability and store filters, sort, pagination |

@@ -12,8 +12,8 @@ import { inflateGuestList, resetDatabase } from "./helpers/db";
 /**
  * Status colours, the redesigned filter bar, and pagination.
  *
- * Runs against an inflated guest list (54 groups / 191 guests). The demo seed's
- * 31 guests never fill a 50-row page, so every pagination control would render
+ * Runs against an inflated guest list (57 groups / 195 guests). The demo seed's
+ * 47 guests never fill a 50-row page, so every pagination control would render
  * in its only-one-page state and prove nothing.
  */
 
@@ -127,7 +127,7 @@ test.describe("filter bar", () => {
     await waitForUrl(page, (url) => url.includes("status="));
     expect(decodeURIComponent(page.url())).toContain("status=attending,declined");
     await expect(page.locator('summary:has-text("pending")')).toHaveCount(0);
-    await expect(page.locator('[aria-live="polite"]').first()).toContainText("of 191 guests match");
+    await expect(page.locator('[aria-live="polite"]').first()).toContainText("of 195 guests match");
   });
 
   test("never lets the last status be unticked", async ({ page }) => {
@@ -175,16 +175,16 @@ test.describe("guest list pagination", () => {
   test("defaults to 50 a page with working steps", async ({ page }) => {
     await page.goto("/admin/guests");
     await expect(guestRows(page)).toHaveCount(50);
-    await expect(page.getByText("Showing 1–50 of 191 guests")).toBeVisible();
+    await expect(page.getByText("Showing 1–50 of 195 guests")).toBeVisible();
     await expect(page.locator('span[aria-disabled]:has-text("Prev")')).toHaveCount(1);
 
     await page.locator('a[aria-label="Next page"]').click();
     await waitForUrl(page, (url) => url.includes("page=2"));
-    await expect(page.getByText("Showing 51–100 of 191 guests")).toBeVisible();
+    await expect(page.getByText("Showing 51–100 of 195 guests")).toBeVisible();
 
     await page.locator('a[aria-label="Previous page"]').click();
     await waitForUrl(page, (url) => !url.includes("page="));
-    await expect(page.getByText("Showing 1–50 of 191 guests")).toBeVisible();
+    await expect(page.getByText("Showing 1–50 of 195 guests")).toBeVisible();
   });
 
   test("offers 50 / 100 / 200 a page", async ({ page }) => {
@@ -193,7 +193,7 @@ test.describe("guest list pagination", () => {
 
     await perPageSelect(page).selectOption("200");
     await waitForUrl(page, (url) => url.includes("per=200"));
-    await expect(guestRows(page)).toHaveCount(191);
+    await expect(guestRows(page)).toHaveCount(195);
     await expect(page.getByText("1 / 1")).toBeVisible();
 
     await perPageSelect(page).selectOption("100");
@@ -205,10 +205,10 @@ test.describe("guest list pagination", () => {
     // The whole point of filtering before slicing: from page 3, a name that
     // only exists on page 1 still has to be findable.
     await page.goto("/admin/guests?page=3");
-    await expect(page.getByText("Showing 101–150 of 191 guests")).toBeVisible();
+    await expect(page.getByText("Showing 101–150 of 195 guests")).toBeVisible();
 
-    await page.fill("#guest-search", "Whitfield");
-    await waitForUrl(page, (url) => url.includes("q=Whitfield"));
+    await page.fill("#guest-search", "Montgomery");
+    await waitForUrl(page, (url) => url.includes("q=Montgomery"));
     await expect(guestRows(page)).toHaveCount(2);
     expect(page.url()).not.toContain("page=");
   });
@@ -226,7 +226,7 @@ test.describe("group pagination", () => {
   test("defaults to 15 a page and offers 15 / 25 / 50", async ({ page }) => {
     await page.goto("/admin/guests?view=groups");
     await expect(groupCards(page)).toHaveCount(15);
-    await expect(page.getByText("Showing 1–15 of 54 groups")).toBeVisible();
+    await expect(page.getByText("Showing 1–15 of 57 groups")).toBeVisible();
     await expect(perPageSelect(page).locator("option")).toHaveText(["15", "25", "50"]);
 
     await perPageSelect(page).selectOption("25");
@@ -235,24 +235,24 @@ test.describe("group pagination", () => {
 
     await page.locator('a[aria-label="Next page"]').click();
     await waitForUrl(page, (url) => url.includes("page=2"));
-    await expect(page.getByText("Showing 26–50 of 54 groups")).toBeVisible();
+    await expect(page.getByText("Showing 26–50 of 57 groups")).toBeVisible();
     expect(page.url()).toContain("per=25");
   });
 
   test("searching reaches groups on other pages", async ({ page }) => {
     await page.goto("/admin/guests?view=groups&per=25&page=2");
-    await page.fill("#guest-search", "Okonkwo");
-    await waitForUrl(page, (url) => url.includes("q=Okonkwo"));
+    await page.fill("#guest-search", "Montgomery");
+    await waitForUrl(page, (url) => url.includes("q=Montgomery"));
     await expect(groupCards(page)).toHaveCount(1);
     expect(page.url()).not.toContain("page=");
   });
 
   test("the view toggle keeps the search but drops the other view's page size", async ({ page }) => {
-    await page.goto("/admin/guests?view=groups&q=Okonkwo&per=25&page=2");
+    await page.goto("/admin/guests?view=groups&q=Montgomery&per=25&page=2");
     await page.locator('[aria-label="Choose a view"] a:has-text("Guest list")').click();
     await waitForUrl(page, (url) => !url.includes("view=groups"));
 
-    expect(page.url()).toContain("q=Okonkwo");
+    expect(page.url()).toContain("q=Montgomery");
     expect(page.url()).not.toContain("per=");
     expect(page.url()).not.toContain("page=");
   });

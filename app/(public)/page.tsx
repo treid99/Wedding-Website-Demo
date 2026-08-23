@@ -10,7 +10,7 @@ const QUICK_LINKS = [
   {
     href: "/travel",
     label: "Travel & Stay",
-    detail: "Directions, hotels, and the shuttle",
+    detail: "Directions, the hotel, and the shuttle",
   },
   {
     href: "/schedule",
