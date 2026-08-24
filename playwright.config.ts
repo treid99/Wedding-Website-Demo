@@ -33,9 +33,19 @@ export default defineConfig({
   expect: { timeout: 10_000 },
 
   /**
+   * Captures data/wedding.db before the first test and puts it back after the
+   * last one. Between tests, the auto fixture in tests/e2e/helpers/test.ts
+   * replays the same snapshot, so the suite never destroys local data — see the
+   * header of tests/e2e/helpers/db.ts.
+   */
+  globalSetup: "./tests/e2e/helpers/global-setup.ts",
+  globalTeardown: "./tests/e2e/helpers/global-teardown.ts",
+
+  /**
    * Serial on purpose. Every spec drives the same SQLite file and most of them
    * write to it, so parallel workers would see each other's guests appear and
-   * disappear mid-assertion. The suite is small enough that this is cheap.
+   * disappear mid-assertion — and each worker's restore would undo the others'
+   * fixtures. The suite is small enough that this is cheap.
    */
   fullyParallel: false,
   workers: 1,

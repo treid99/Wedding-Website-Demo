@@ -103,12 +103,15 @@ its own.
 own `.next-test` directory, so it neither needs nor disturbs a dev server on
 3000. Both can run at once.
 
-> **`npm run test:e2e` reseeds `data/wedding.db`.** Anything you entered in the
-> demo is discarded.
+> **`npm run test:e2e` leaves `data/wedding.db` exactly as it found it.** The
+> suite snapshots every table before the first test and replays that snapshot
+> after each one, so specs add, edit and delete freely and nothing you entered
+> in the demo is lost.
 
-See [`tests/README.md`](tests/README.md) for the layout, the two rules that keep
-a shared-database suite stable, and the assertion habits that came out of tests
-which passed against broken code.
+See [`tests/README.md`](tests/README.md) for the layout, the rules that keep a
+shared-database suite stable, why specs build their own rows instead of
+asserting on seeded ones, and the assertion habits that came out of tests which
+passed against broken code.
 
 ---
 

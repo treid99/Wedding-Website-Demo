@@ -1,11 +1,18 @@
-import { expect, test } from "@playwright/test";
 import { hideDevOverlay, signIn } from "./helpers/admin";
-import { resetDatabase } from "./helpers/db";
+import {
+  countGalleryPhotos,
+  firstSeatingTable,
+  someRegistryStore,
+} from "./helpers/db";
+import { createParty, seatGuests, uniqueToken } from "./helpers/fixtures";
+import { expect, test } from "./helpers/test";
 
 /** The auth gate, seating, content editing, and registry CRUD. */
 
 test.describe("auth", () => {
-  test("gates the admin, lets any credentials in, and re-gates on sign out", async ({ page }) => {
+  test("gates the admin, lets any credentials in, and re-gates on sign out", async ({
+    page,
+  }) => {
     await page.goto("/admin/guests");
     expect(page.url()).toContain("/admin/login");
 
@@ -23,34 +30,41 @@ test.describe("auth", () => {
 
 test.describe("logged in", () => {
   test.beforeEach(async ({ page }) => {
-    resetDatabase();
     await signIn(page);
   });
 
   test("the dashboard surfaces a submitted RSVP", async ({ page }) => {
+    // Three pending guests with no submission on record: the shape the public
+    // RSVP form is built for, and the one the dashboard has to pick up.
+    const party = createParty({ guests: 3 });
+    const dietary = "No blue cheese, please";
+    const message = `Driving down — ${party.token} party of three.`;
+
     // Submit as a guest first, then check the couple can see it.
     await page.goto("/rsvp");
-    await page.fill("#rsvp-lookup", "Schitt");
+    await page.fill("#rsvp-lookup", party.token);
     await page.click('button:has-text("Search")');
-    await expect(page.getByText("Roland & Jocelyn Schitt")).toBeVisible();
+    await expect(page.getByText(party.name)).toBeVisible();
 
     const members = page.locator("fieldset");
+    await expect(members).toHaveCount(party.guests.length);
+
     await members.nth(0).locator('label:has-text("Joyfully accepts")').click();
     await members.nth(0).locator("select").selectOption("filet");
-    await members.nth(0).locator('input[type="text"]').fill("No blue cheese, please");
+    await members.nth(0).locator('input[type="text"]').fill(dietary);
     await members.nth(1).locator('label:has-text("Regretfully declines")').click();
     await members.nth(2).locator('label:has-text("Regretfully declines")').click();
-    await page.fill("#rsvp-message", "Driving down from Schitt's Creek — the motel can wait.");
+    await page.fill("#rsvp-message", message);
     await page.click('button:has-text("Send our response")');
     await expect(page.getByText(/Thank you/)).toBeVisible();
 
     await page.goto("/admin");
-    await expect(page.getByText(/the motel can wait/)).toBeVisible();
-    await expect(page.getByText(/blue cheese/i)).toBeVisible();
+    await expect(page.getByText(message)).toBeVisible();
+    await expect(page.getByText(dietary)).toBeVisible();
 
-    await page.goto("/admin/guests?q=Schitt");
-    await expect(page.locator('summary:has-text("attending")')).not.toHaveCount(0);
-    await expect(page.locator('summary:has-text("declined")')).not.toHaveCount(0);
+    await page.goto(`/admin/guests?q=${party.token}`);
+    await expect(page.locator('summary:has-text("attending")')).toHaveCount(1);
+    await expect(page.locator('summary:has-text("declined")')).toHaveCount(2);
   });
 
   test("seating assignments persist across a reload", async ({ page }) => {
@@ -72,77 +86,111 @@ test.describe("logged in", () => {
   });
 
   test("a table reports its occupancy and meal tally", async ({ page }) => {
+    // Seat a fixture rather than trusting that somebody is already sitting
+    // there: an empty table renders no tally at all, so the assertion below
+    // would pass by matching nothing.
+    const table = firstSeatingTable();
+    const party = createParty({
+      guests: [
+        { status: "attending", meal: "filet" },
+        { status: "attending", meal: "salmon" },
+      ],
+    });
+    seatGuests(table.id, party.guests);
+
     await page.goto("/admin/seating");
-    const kids = page.locator('div:has(> header h3:text-is("Kids\' Table"))').first();
-    await expect(kids.locator("header span").first()).toHaveText(/\d+\/\d+/);
-    await expect(kids).toContainText(/Kids|Beef|Chicken|Salmon|Veg/);
+    const card = page
+      .locator(`div:has(> header h3:text-is("${table.name}"))`)
+      .first();
+
+    await expect(card.locator("header span").first()).toHaveText(/\d+\/\d+/);
+    await expect(card).toContainText(/Kids|Beef|Chicken|Salmon|Veg/);
+    await expect(card).toContainText(party.guests[0].name);
   });
 
   test("a FAQ edit reaches the public page", async ({ page }) => {
+    const token = uniqueToken();
+
     await page.goto("/admin/content?tab=faq");
     const first = page.locator("details").first();
     await first.locator("summary").click();
     await first
       .locator('textarea[name="answer"]')
-      .fill("EDITED BY THE TEST SUITE — garden formal, and please wear block heels.");
+      .fill(`${token} — garden formal, and please wear block heels.`);
     await first.locator('button:has-text("Save")').click();
     await page.waitForLoadState("networkidle");
 
     await page.goto("/faq");
-    await expect(page.getByText("EDITED BY THE TEST SUITE", { exact: false })).toBeVisible();
+    await expect(page.getByText(token, { exact: false })).toBeVisible();
   });
 
-  test("removing a photo from the gallery takes effect publicly", async ({ page }) => {
+  test("removing a photo from the gallery takes effect publicly", async ({
+    page,
+  }) => {
+    const before = countGalleryPhotos();
+    expect(before, "the gallery is empty, so there is nothing to remove").toBeGreaterThan(0);
+
     await page.goto("/admin/content?tab=photos");
-    await page.locator('button[aria-pressed="true"]:has-text("Gallery")').first().click();
+    await page
+      .locator('button[aria-pressed="true"]:has-text("Gallery")')
+      .first()
+      .click();
     await page.waitForLoadState("networkidle");
+    expect(countGalleryPhotos()).toBe(before - 1);
 
     await page.goto("/gallery");
-    await expect(page.locator("main img")).toHaveCount(15);
+    await expect(page.locator("main img")).toHaveCount(before - 1);
   });
 
   test("portraits cannot be added to the hero carousel", async ({ page }) => {
     await page.goto("/admin/content?tab=photos");
     await hideDevOverlay(page);
-    expect(await page.locator('button:has-text("Carousel")[disabled]').count()).toBeGreaterThan(0);
+    expect(
+      await page.locator('button:has-text("Carousel")[disabled]').count(),
+    ).toBeGreaterThan(0);
   });
 
   test("registry add / purchase / delete round trip", async ({ page }) => {
+    const token = uniqueToken();
+    const title = `${token} Teapot`;
+    const buyer = `The ${token} Family`;
+    const store = someRegistryStore();
+
     await page.goto("/admin/registry");
-    await page.fill("#new-title", "Test Suite Teapot");
+    await page.fill("#new-title", title);
     await page.fill("#new-price", "42.50");
-    await page.fill("#new-store", "Target");
+    await page.fill("#new-store", store);
     await page.fill("#new-description", "Added by the e2e suite.");
-    await page.fill("#new-url", "https://www.target.com/s?searchTerm=teapot");
+    await page.fill("#new-url", `https://example.com/${token}`);
     await page.click('button:has-text("Add to registry")');
     await page.waitForLoadState("networkidle");
 
     // Scoped to the cards: the filter sidebar carries the words "Purchased"
     // and a price range too, and an unscoped getByText matches both.
-    const card = page.locator('article:has-text("Test Suite Teapot")');
+    const card = page.locator(`article:has-text("${title}")`);
 
-    await page.goto("/registry?q=Test+Suite");
+    await page.goto(`/registry?q=${token}`);
     await expect(card).toHaveCount(1);
     await expect(card).toContainText("$42.50");
 
     await page.goto("/admin/registry");
-    const row = page.locator('details:has-text("Test Suite Teapot")').first();
+    const row = page.locator(`details:has-text("${title}")`).first();
     await row.locator("summary").click();
-    await row.locator('input[name="purchased_by"]').fill("The Test Family");
+    await row.locator('input[name="purchased_by"]').fill(buyer);
     await row.locator('button:has-text("Mark purchased")').click();
     await page.waitForLoadState("networkidle");
 
-    await page.goto("/registry?q=Test+Suite");
+    await page.goto(`/registry?q=${token}`);
     await expect(card).toContainText("Purchased");
-    await expect(card).toContainText("The Test Family");
+    await expect(card).toContainText(buyer);
 
     await page.goto("/admin/registry");
-    const again = page.locator('details:has-text("Test Suite Teapot")').first();
+    const again = page.locator(`details:has-text("${title}")`).first();
     await again.locator("summary").click();
     await again.locator('button:has-text("Remove this item")').click();
     await page.waitForLoadState("networkidle");
 
-    await page.goto("/registry?q=Test+Suite");
+    await page.goto(`/registry?q=${token}`);
     await expect(card).toHaveCount(0);
     await expect(page.getByText(/Nothing here/).first()).toBeVisible();
   });
